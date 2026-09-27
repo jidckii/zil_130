@@ -10,6 +10,8 @@
 - `docs/` — концепция и решения (`project.md`), этапы и бэклог (`plan.md`).
 - `calc/` — расчёты на Python; `results.md` генерируется скриптом, руками не править.
 - `ecu/` — настройки rusEFI и Lua-скрипт; проверка — `lua ecu/zil130_test.lua`.
+- `cad/` — модели на build123d: плита развала, ресивер, разрезка под печать; выход в `cad/out/` (в git не попадает).
+  Проверки зазоров и доступа ключом — в самих скриптах, `uv run python cad/receiver.py` падает при нарушении.
 - `research/engine-data.md` — заводские данные двигателя, у каждой цифры ссылка `[документ стр.]`.
 - `research/prior-art.md` — чужие переделки, рынок, ЭБУ.
 - `research/videos/notes.md` — разбор видео Pshenitsin_v8 inc.; кадры в `keyframes/`.
