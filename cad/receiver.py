@@ -8,7 +8,7 @@ from pathlib import Path
 
 from build123d import Box, Circle, Cylinder, Keep, Plane, Pos, Spline, Vector, Wire, export_step, export_stl, sweep
 
-from manifold_skeleton import BASE, PLENUM_VOL, RUNNER_D, STUDS, THROTTLE_BOLTS, THROTTLE_D, WALL, flange_point
+from manifold_skeleton import BASE, PLENUM_VOL, RUNNER_D, STUDS, WALL, flange_point
 from valley_plate import (EXIT_Y, NECK, SPLIT_Z, build as build_plate, exits, keepout, pad, pad_bolts, seat_rise)
 
 UP_T = 12.0
@@ -16,11 +16,16 @@ BOLT_CLEAR = 9.0  # М8
 PLENUM_W = 120.0  # внутри; стенки на ±63 — внутри линии болтов ±77
 PLENUM_Z0 = 440.0  # дно над площадками, под ним свободно для шлангов воды и сапуна
 ENTRY_Z = 475.0  # ось входа раннера в стенку: поворот R≈55 от вертикали у площадки
-THROTTLE_PAD_T, THROTTLE_TAP = 12.0, 6.8  # под метчик М8 на шпильки дросселя
-THROTTLE_BODY = (THROTTLE_BOLTS + 24, 65.0)  # корпус ЗМЗ-406: квадрат фланца и длина — оценка
-# М12×1,5 сверху, под датчик или переходник на штуцер: ДАД rusEFI, картерные газы, температура воздуха,
-# отсылка газового редуктора и бензинового регулятора — оба держат давление над MAP.
-PORTS = ((40.0, -25.0), (80.0, -25.0), (120.0, -25.0), (40.0, 25.0), (80.0, 25.0))
+# Электронный дроссель — один на оба мотора: Bosch 0 280 750 129 с КАМАЗ-820, Ø69 (research/electronic-throttle.md).
+# Его фланец не опубликован, поэтому площадка пока под Bosch 0 280 750 151 с УАЗ ЗМЗ-409: 4 отверстия по квадрату
+# 60×60, резьба не опубликована — под метчик М8. Проём в стенке сразу под Ø69.
+THROTTLE_OPENING, THROTTLE_BOLTS = 70.0, 60.0
+THROTTLE_PAD_T, THROTTLE_TAP = 12.0, 6.8
+THROTTLE_BODY = (130.0, 100.0, 75.0)  # габарит с мотором сбоку (ось заслонки горизонтально): Y, Z, длина — оценка
+# М12×1,5 сверху, под датчик или переходник на штуцер; X от передней стенки. Редуктор и регулятор держат
+# давление над MAP. Картерные газы — в середину: подальше от оси заслонки и ровнее по цилиндрам [D73 дж.110].
+PORTS = {"ДАД": (40.0, -25.0), "ДТВ": (80.0, -25.0), "газовый редуктор": (40.0, 25.0),
+         "бензиновый регулятор": (80.0, 25.0), "картерные газы": (204.0, 0.0)}
 PORT_TAP = 10.2
 HEAD_PORT = 120.0  # канал ГБЦ, оценка по [HD87 л.1 И1–И1] (engine-data.md, раздел 13)
 SOCKET_BOLT, SOCKET_NUT = 9.5, 12.0  # радиус торцевой головки: М8 (13 мм), гайка М10×1 (17 мм)
@@ -46,15 +51,15 @@ def plenum():
     top = PLENUM_Z0 + h + 2 * WALL
     outer = Pos((x0 + x1) / 2, 0, PLENUM_Z0) * Box(x1 - x0, PLENUM_W + 2 * WALL, h + 2 * WALL, align=BASE)
     inner = Pos((x0 + x1) / 2, 0, PLENUM_Z0 + WALL) * Box(length, PLENUM_W, h, align=BASE)
-    front = Plane((x0, 0, PLENUM_Z0 + WALL + h / 2), z_dir=(-1, 0, 0))
-    sq, half = THROTTLE_BODY[0], THROTTLE_BOLTS / 2
+    front = Plane((x0, 0, PLENUM_Z0 + WALL + h / 2), x_dir=(0, 1, 0), z_dir=(-1, 0, 0))
+    sq, half = THROTTLE_BOLTS + 24, THROTTLE_BOLTS / 2
     bodies = [outer, front * Box(sq, sq, THROTTLE_PAD_T, align=BASE)]
-    bodies += [Pos(x0 + x, y, top - 1) * Cylinder(11, 11, align=BASE) for x, y in PORTS]
-    cuts = [inner, front * Pos(0, 0, -WALL - 1) * Cylinder(THROTTLE_D / 2, THROTTLE_PAD_T + WALL + 2, align=BASE)]
+    bodies += [Pos(x0 + x, y, top - 1) * Cylinder(11, 11, align=BASE) for x, y in PORTS.values()]
+    cuts = [inner, front * Pos(0, 0, -WALL - 1) * Cylinder(THROTTLE_OPENING / 2, THROTTLE_PAD_T + WALL + 2, align=BASE)]
     cuts += [front * Pos(dx, dy, THROTTLE_PAD_T - 20) * Cylinder(THROTTLE_TAP / 2, 21, align=BASE)
              for dx in (-half, half) for dy in (-half, half)]
-    cuts += [Pos(x0 + x, y, top - WALL - 1) * Cylinder(PORT_TAP / 2, 15, align=BASE) for x, y in PORTS]
-    throttle = front * Pos(0, 0, THROTTLE_PAD_T) * Box(sq, sq, THROTTLE_BODY[1], align=BASE)
+    cuts += [Pos(x0 + x, y, top - WALL - 1) * Cylinder(PORT_TAP / 2, 15, align=BASE) for x, y in PORTS.values()]
+    throttle = front * Pos(0, 0, THROTTLE_PAD_T) * Box(*THROTTLE_BODY, align=BASE)
     return bodies, cuts, throttle, (x0, x1, h, top)
 
 
