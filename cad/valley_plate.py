@@ -1,7 +1,7 @@
 """Нижний этаж коллектора ЗИЛ-130/375 — плита развала, пластиковый макет для примерки.
 
 Запуск: uv run python cad/valley_plate.py  → cad/out/valley_plate.{step,stl}, cad/out/keepout.step
-Оси, фланцы головок и штуцеры форсунок — из manifold_skeleton.py; опоры развала — research/engine-data.md, раздел 14.
+Оси и фланцы головок — из manifold_skeleton.py; опоры развала — research/engine-data.md, раздел 14.
 Верхний этаж (ресивер с раннерами) встаёт на две горизонтальные площадки SPLIT_Z на болтах М8.
 """
 import math
@@ -11,7 +11,7 @@ from build123d import (Box, Circle, Cylinder, Keep, Plane, Polyline, Pos, Rectan
                        export_step, export_stl, extrude, loft, make_face, sweep)
 
 from manifold_skeleton import (BASE, FLANGE_T, PITCH, PORT_H, PORT_PITCH, PORT_R, PORT_W, RUNNER_D, STUD_HOLE,
-                               STUDS, WALL, WATER, flange_normal, flange_point, injector_boss)
+                               STUDS, WALL, WATER, flange_normal, flange_point)
 
 VALLEY_Z = 306.0  # верх передней площадки и заднего ребра [BD л.2 вид спереди, л.3 И₁–И₁]
 BLOCK_FRONT = -116.0  # передний торец блока [BD л.1]
@@ -28,7 +28,12 @@ SPLIT_Z = 420.0  # разъём с ресивером: на уровне шта�
 EXIT_Y = 110.0
 EXIT_SPREAD = 25.0  # у окна пара через 32,9 — круги Ø42 разводим, иначе каналы сольются
 TRANSITION = 40.0  # окно 27,8×56,8 → круг
-INJECTOR_AT = 25.0  # ближе к окну, чтобы шланг форсунки прошёл снаружи площадки
+# Газ калибруется сменным соплом на форсунке (2,25–3,25 мм), в плите — штуцер М8×1 с проходом больше сопла
+# (research/fuel-system.md). Стоит у окна, наружу-вверх: выше по каналу место бензиновой форсунки.
+GAS_AT, GAS_ANGLE, GAS_BOSS, GAS_TAP = 10.0, 10.0, 16.0, 7.0
+# Бензин: Bosch 0 280 158 205, кольцо Ø14, 61 мм между кольцами (research/petrol-injection.md). Ось вертикальная
+# через центр окна — факел под 35° к оси канала прямо в окно ГБЦ; корпус и рампа снаружи площадки ресивера.
+PETROL_TOP, PETROL_BOSS, PETROL_BORE, PETROL_SEAT, PETROL_NOSE = 400.0, 24.0, 14.1, 12.0, 11.0
 PAD_T, PAD_IN, PAD_OUT = 16.0, 42.0, 25.0  # площадка от оси выходов внутрь / наружу
 PAD_BOLT = 6.8  # под метчик М8
 SEAT_D = 22.0  # горизонтальная опора гайки М10×1 на вертикальной шпильке
@@ -68,6 +73,36 @@ def seat_rise():
     """Верх опоры гайки над точкой шпильки на плоскости фланца: толщина по вертикали + наклон под опорой."""
     nz = flange_normal(1).Z
     return FLANGE_T / nz + SEAT_D / 2 * math.tan(math.radians(90) - math.asin(nz))
+
+
+def gas_fitting(side, port, x, hole):
+    n = flange_normal(side)
+    up = Vector(0, side * n.Z, -side * n.Y)
+    b = math.radians(GAS_ANGLE)
+    axis = up * math.cos(b) + n * math.sin(b)
+    pl = Plane(Vector(port.X + (x - port.X) * GAS_AT / TRANSITION, port.Y, port.Z) + n * GAS_AT, z_dir=axis)
+    if hole:
+        return pl * Cylinder(GAS_TAP / 2, 60, align=BASE)
+    return pl * Pos(0, 0, 22) * Cylinder(GAS_BOSS / 2, 20, align=BASE)
+
+
+def petrol_boss(port, hole):
+    top = Pos(port.X, port.Y, PETROL_TOP)
+    if hole:
+        return [top * Pos(0, 0, -PETROL_SEAT) * Cylinder(PETROL_BORE / 2, PETROL_SEAT + 1, align=BASE),
+                top * Pos(0, 0, -PETROL_SEAT - 30) * Cylinder(PETROL_NOSE / 2, 31, align=BASE)]
+    return top * Pos(0, 0, -30) * Cylinder(PETROL_BOSS / 2, 30, align=BASE)
+
+
+def petrol_keepout():
+    """Корпуса бензиновых форсунок и рампы — по одной на пару цилиндров, чтобы не закрыть гайки шпилек."""
+    parts = []
+    for side in (1, -1):
+        ports = [p for p, _ in exits(side)]
+        for a, b in (ports[:2], ports[2:]):
+            parts += [Pos(p.X, p.Y, PETROL_TOP) * Cylinder(10, 60, align=BASE) for p in (a, b)]
+            parts.append(Pos((a.X + b.X) / 2, a.Y, PETROL_TOP + 50) * Box(abs(b.X - a.X) + 40, 24, 35, align=BASE))
+    return parts
 
 
 def side_flange(side):
@@ -169,9 +204,8 @@ def build():
             outer.append(o)
             cuts.append(f)
             lengths.append(length)
-            x_boss = port.X + (x - port.X) * INJECTOR_AT / TRANSITION
-            outer.append(injector_boss(side, x_boss, hole=False, at=INJECTOR_AT))
-            cuts.append(injector_boss(side, x_boss, hole=True, at=INJECTOR_AT))
+            outer += [gas_fitting(side, port, x, hole=False), petrol_boss(port, hole=False)]
+            cuts += [gas_fitting(side, port, x, hole=True), *petrol_boss(port, hole=True)]
     part = sum(outer[1:], outer[0]) - sum(cuts[1:], cuts[0])
     part = part.split(Plane((0, 0, SPLIT_Z), z_dir=(0, 0, 1)), keep=Keep.BOTTOM)
     bodies, holes = crankcase_ports()

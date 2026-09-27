@@ -9,7 +9,8 @@ from pathlib import Path
 from build123d import Box, Circle, Cylinder, Keep, Plane, Pos, Spline, Vector, Wire, export_step, export_stl, sweep
 
 from manifold_skeleton import BASE, PLENUM_VOL, RUNNER_D, STUDS, WALL, flange_point
-from valley_plate import (EXIT_Y, NECK, SPLIT_Z, build as build_plate, exits, keepout, pad, pad_bolts, seat_rise)
+from valley_plate import (EXIT_Y, NECK, SPLIT_Z, build as build_plate, exits, keepout, pad, pad_bolts, petrol_keepout,
+                          seat_rise)
 
 UP_T = 12.0
 BOLT_CLEAR = 9.0  # М8
@@ -103,12 +104,14 @@ if __name__ == "__main__":
     assert len(air.solids()) == 8, "раннеры пересекаются"
     plate, plate_lengths = build_plate()
     assert overlap(part, plate) < 1, "ресивер залез в плиту"
+    injectors = petrol_keepout()
+    assert all(overlap(part, k) < 1 for k in injectors), "ресивер задевает бензиновые форсунки или рампы"
     ko = keepout()
     for name, k in (("трамблёр с приводом", ko[:4]), ("клапанные крышки", ko[4:])):
         gap = min(part.distance_to(s) for s in k)
         assert gap > 0, f"ресивер задевает: {name}"
         print(f"Зазор до {name}: {gap:.1f} мм")
-    blocked = [t for t in access() if overlap(part + throttle, t) > 1]
+    blocked = [t for t in access() if overlap(part + throttle, t) > 1 or any(overlap(k, t) > 1 for k in injectors)]
     assert not blocked, f"сверху не подлезть в {len(blocked)} местах"
     out = Path(__file__).parent / "out"
     out.mkdir(exist_ok=True)
