@@ -13,7 +13,7 @@
 - `research/engine-data.md` — заводские данные двигателя, у каждой цифры ссылка `[документ стр.]`.
 - `research/prior-art.md` — чужие переделки, рынок, ЭБУ.
 - `research/videos/notes.md` — разбор видео Pshenitsin_v8 inc.; кадры в `keyframes/`.
-- `research/sources/drawings/` — купленные заводские чертежи по разделам autoar.org, в git только `README.md` со ссылками; копия — Яндекс Диск `zil_130/` с той же структурой.
+- `research/sources/drawings/` — купленные заводские чертежи по разделам autoar.org, `README.md` со ссылками на магазин; копия — Яндекс Диск `zil_130/` с той же структурой.
 - `research/sources/` — сканы заводских книг (DjVu/PDF, в git не попадают),
   `ocr/*.txt` — постраничный текст для grep, `figures/` — страницы с чертежами.
 
