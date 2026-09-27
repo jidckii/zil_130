@@ -81,11 +81,13 @@ def volume(theta, eng, eps):
     return vd / (eps - 1) + vd / 2 * (r + 1 - math.cos(a) - math.sqrt(r**2 - math.sin(a) ** 2))
 
 
-def knock_integral(eng, eps, map_, t_intake, rpm, hot, lam=1.0, dt_ivc=DT_IVC, **override):
+def knock_integral(eng, eps, map_, t_intake, rpm, hot, lam=1.0, dt_ivc=DT_IVC, tau_fn=None, afr=AFR_CH4, lhv=LHV_CH4,
+                   **override):
     eng = Engine(**{**eng.__dict__, **override})
     p, t_ivc = map_, t_intake + dt_ivc
     v = volume(eng.ivc, eng, eps)
-    q_total = p * v / (R_MIX * t_ivc) / (1 + AFR_CH4 * lam) * LHV_CH4 * 0.95
+    q_total = p * v / (R_MIX * t_ivc) / (1 + afr * lam) * lhv * 0.95
+    tau_fn = tau_fn or tau
     start = eng.ca50 - eng.burn * (math.log(2) / WIEBE_A) ** (1 / (WIEBE_M + 1))
     step, theta, xb, integral = 0.2, eng.ivc, 0.0, 0.0
     while xb < KNOCK_AT:
@@ -95,7 +97,7 @@ def knock_integral(eng, eps, map_, t_intake, rpm, hot, lam=1.0, dt_ivc=DT_IVC, *
         v2 = volume(theta2, eng, eps)
         p += ((K - 1) * q_total * (xb2 - xb) - K * p * (v2 - v)) / v
         t_unburned = t_ivc * (p / map_) ** ((K - 1) / K) + hot
-        integral += step / (6 * rpm) / tau(p, t_unburned, 1 / lam)
+        integral += step / (6 * rpm) / tau_fn(p, t_unburned, 1 / lam)
         theta, xb, v = theta2, xb2, v2
     return integral
 
