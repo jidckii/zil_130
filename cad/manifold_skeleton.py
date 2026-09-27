@@ -14,6 +14,7 @@ PITCH = 135.0  # межцилиндровое [D73 дж.8]
 RUNNER_D = 42.0  # calc/results.md: 40–45
 PLENUM_VOL = 5.0e6  # мм³; calc/results.md: 4,2–7,0 л
 THROTTLE_D = 60.0  # ГАЗ Ø60; для 7 л лучше 71 (calc/results.md)
+THROTTLE_BOLTS, THROTTLE_HOLE = 70.0, 9.0  # ЗМЗ-406 4062.1148100: 4 отв. Ø9 по квадрату 70×70 (research/engine-data.md, 12.3)
 WALL = 3.0  # пластиковый макет
 
 BANK_OFFSET = 29.0  # левый ряд назад на ширину головки шатуна [TU66 печ.188], [D73 дж.21]
@@ -135,6 +136,10 @@ def build():
     throttle = Plane((x0, 0, PLENUM_Z), z_dir=(-1, 0, 0))
     outer.append(throttle * Pos(0, 0, -WALL) * Cylinder(THROTTLE_D / 2 + WALL, 60 + WALL, align=BASE))
     fluid.append(throttle * Pos(0, 0, -WALL - 1) * Cylinder(THROTTLE_D / 2, 62 + WALL, align=BASE))
+    outer.append(throttle * Pos(0, 0, 60 - FLANGE_T) * Box(THROTTLE_BOLTS + 24, THROTTLE_BOLTS + 24, FLANGE_T, align=BASE))
+    half = THROTTLE_BOLTS / 2
+    cuts += [throttle * Pos(dx, dy, 40) * Cylinder(THROTTLE_HOLE / 2, 30, align=BASE)
+             for dx in (-half, half) for dy in (-half, half)]
     body = sum(outer[1:], outer[0])
     air = sum(fluid[1:], fluid[0])
     return body - air - sum(cuts[1:], cuts[0]), air, lengths, h
