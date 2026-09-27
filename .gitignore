@@ -7,5 +7,7 @@ __pycache__/
 *.FCBak
 research/sources/*.pdf
 research/sources/*.djvu
+research/sources/drawings/*
+!research/sources/drawings/README.md
 .claude/settings.local.json
 cad/out/
