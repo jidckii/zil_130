@@ -17,17 +17,16 @@ BOLT_CLEAR = 9.0  # М8
 PLENUM_W = 120.0  # внутри; стенки на ±63 — внутри линии болтов ±77
 PLENUM_Z0 = 440.0  # дно над площадками, под ним свободно для шлангов воды и сапуна
 ENTRY_Z = 475.0  # ось входа раннера в стенку: поворот R≈55 от вертикали у площадки
-# Электронный дроссель — один на оба мотора: Bosch 0 280 750 129 с КАМАЗ-820, Ø69 (research/electronic-throttle.md).
-# Его фланец не опубликован, поэтому площадка пока под Bosch 0 280 750 151 с УАЗ ЗМЗ-409: 4 отверстия по квадрату
-# 60×60, резьба не опубликована — под метчик М8. Проём в стенке сразу под Ø69.
-THROTTLE_OPENING, THROTTLE_BOLTS = 70.0, 60.0
+# Дроссель ЗМЗ-406 4062.1148100 на тросе, один на оба мотора: Ø60, 4 отверстия Ø9 по квадрату 70×70
+# (research/engine-data.md, 12.3) — площадка под метчик М8.
+THROTTLE_OPENING, THROTTLE_BOLTS = 60.0, 70.0
 THROTTLE_PAD_T, THROTTLE_TAP = 12.0, 6.8
-THROTTLE_BODY = (130.0, 100.0, 75.0)  # габарит с мотором сбоку (ось заслонки горизонтально): Y, Z, длина — оценка
-# М12×1,5 сверху, под датчик или переходник на штуцер; X от передней стенки. Редуктор и регулятор держат
-# давление над MAP. Картерные газы — в середину: подальше от оси заслонки и ровнее по цилиндрам [D73 дж.110].
-PORTS = {"ДАД": (40.0, -25.0), "ДТВ": (80.0, -25.0), "газовый редуктор": (40.0, 25.0),
-         "бензиновый регулятор": (80.0, 25.0), "картерные газы": (204.0, 0.0)}
-PORT_TAP = 10.2
+THROTTLE_BODY = (130.0, 100.0, 75.0)  # габарит с сектором троса и ДПДЗ по бокам: Y, Z, длина — оценка
+# Сверху, X от передней стенки: М12×1,5 под датчик или переходник на штуцер, М22×1,5 — штуцер шланга РХХ-60
+# (диаметр шланга снять с детали). Редуктор и регулятор держат давление над MAP. Картерные газы — в середину:
+# подальше от заслонки и ровнее по цилиндрам [D73 дж.110].
+PORTS = {"ДАД": (40.0, -25.0, 10.2), "ДТВ": (80.0, -25.0, 10.2), "газовый редуктор": (40.0, 25.0, 10.2),
+         "бензиновый регулятор": (80.0, 25.0, 10.2), "РХХ": (130.0, 0.0, 20.4), "картерные газы": (204.0, 0.0, 10.2)}
 HEAD_PORT = 120.0  # канал ГБЦ, оценка по [HD87 л.1 И1–И1] (engine-data.md, раздел 13)
 SOCKET_BOLT, SOCKET_NUT = 9.5, 12.0  # радиус торцевой головки: М8 (13 мм), гайка М10×1 (17 мм)
 
@@ -55,11 +54,11 @@ def plenum():
     front = Plane((x0, 0, PLENUM_Z0 + WALL + h / 2), x_dir=(0, 1, 0), z_dir=(-1, 0, 0))
     sq, half = THROTTLE_BOLTS + 24, THROTTLE_BOLTS / 2
     bodies = [outer, front * Box(sq, sq, THROTTLE_PAD_T, align=BASE)]
-    bodies += [Pos(x0 + x, y, top - 1) * Cylinder(11, 11, align=BASE) for x, y in PORTS.values()]
+    bodies += [Pos(x0 + x, y, top - 1) * Cylinder(tap / 2 + 6, 11, align=BASE) for x, y, tap in PORTS.values()]
     cuts = [inner, front * Pos(0, 0, -WALL - 1) * Cylinder(THROTTLE_OPENING / 2, THROTTLE_PAD_T + WALL + 2, align=BASE)]
     cuts += [front * Pos(dx, dy, THROTTLE_PAD_T - 20) * Cylinder(THROTTLE_TAP / 2, 21, align=BASE)
              for dx in (-half, half) for dy in (-half, half)]
-    cuts += [Pos(x0 + x, y, top - WALL - 1) * Cylinder(PORT_TAP / 2, 15, align=BASE) for x, y in PORTS.values()]
+    cuts += [Pos(x0 + x, y, top - WALL - 1) * Cylinder(tap / 2, 15, align=BASE) for x, y, tap in PORTS.values()]
     throttle = front * Pos(0, 0, THROTTLE_PAD_T) * Box(*THROTTLE_BODY, align=BASE)
     return bodies, cuts, throttle, (x0, x1, h, top)
 

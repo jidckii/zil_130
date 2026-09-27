@@ -12,7 +12,7 @@
 | [valvetrain.md](valvetrain.md) | Пружины клапанов под 4000 об/мин и наддув, штанги, диск 60-2, датчик фазы, rusEFI |
 | [turbo.md](turbo.md) | Турбины по картам компрессоров, с каких оборотов держится наддув |
 | [fuel-system.md](fuel-system.md) | Метановые форсунки, редуктор, датчики газа, P&H-драйвер под расчётный расход |
-| [electronic-throttle.md](electronic-throttle.md) | Электронный дроссель (Bosch 0 280 750 129 с КАМАЗ-820 на оба мотора, 151 с УАЗ как дешёвый), педаль, настройка и отказы в rusEFI |
+| [electronic-throttle.md](electronic-throttle.md) | Дроссель ЗМЗ-406 на тросе с РХХ-60 — выбран; электронный (Bosch с КАМАЗ-820 и УАЗ), педаль, настройка в rusEFI — отклонён по цене, справка |
 | [ignition.md](ignition.md) | Катушки со встроенным коммутатором (GM LS D585), выходы Proteus и uaEFI под 8 катушек |
 | [petrol-injection.md](petrol-injection.md) | Бензиновый вариант: форсунки (Bosch 0 280 158 205 / 237), регулятор, насос, рампа; наддув на бензине по детонации; два топлива как у ЗМЗ-5245 |
 | [videos/notes.md](videos/notes.md) | Разбор 3 видео Pshenitsin_v8 inc., стенд, распредвалы, кадры в `videos/keyframes/` |

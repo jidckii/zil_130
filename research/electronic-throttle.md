@@ -1,8 +1,27 @@
-# Электронный дроссель и педаль
+# Дроссель: механический ЗМЗ-406 и отклонённый электронный
 
-Дата: 2026-09-27. Решение пользователя: дроссель электронный, готовый с массовой машины; педаль — напольный модуль с ГАЗон Next или КАМАЗа, посадку смотреть по месту ([../docs/plan.md](../docs/plan.md)). Настройки rusEFI сверены с исходниками rusefi/rusefi 009fa2f.
+Дата: 2026-09-27.
 
-## Итог
+## Выбрано: ЗМЗ-406 на тросе
+
+Решение пользователя: электронный дроссель со всеми плюсами стоит 12–25 тыс. ₽ плюс педаль, а грузовик без проблем ездит с педалью на тяге. Для владельцев ЗИЛ разница с ≈5–10 тыс. ₽ за механику решающая ([../docs/plan.md](../docs/plan.md), принцип доступности узлов). Настройки ЭБУ — [../ecu/README.md](../ecu/README.md), раздел «Дроссель и холостой ход».
+
+| Деталь | Номер | Цена в РФ |
+|---|---|---|
+| Дроссель, Ø60, 4 отв. Ø9 по квадрату 70×70 | 4062.1148100 (Пекар); с ДПДЗ — 4062.1148100-02 | 3 520 ₽ [autoopt-406]; с ДПДЗ 4 845 ₽ [rusautoopt-406]; «Импульс» 1 370 ₽ [avtoall-imp] |
+| ДПДЗ | 406.1130000 (Пекар), НРК 1-8 | 485–665 ₽ [sparox-tps], [avtoall-tps] |
+| РХХ-60, поворотный на две обмотки, 3 контакта, 125 Гц, 60 кг/ч, на шлангах | 406.1147051-02 (Пекар, Пегас) = Bosch 0 280 140 545 | 1 890–4 270 ₽ [sparox-iac], [rusautoopt-iac]; параметры — [osensorax] |
+| Трос и качалка | трос ГАЗ под сектор 406, качалка на тяге ЗИЛ | около 1 тыс. ₽, оценка |
+
+**Что теряем против электронного:** круиз и плавное прикрытие заслонкой на ограничителе — ограничитель делаем отсечкой топлива. **Что получаем:** штатная педаль ЗИЛ с тягами (ход ≥160 мм [REG69 дж.23]) и ручной газ на тросе без ЭБУ, нет отказов по заклиниванию и расхождению датчиков, дешёвые запчасти в любом магазине ГАЗ/УАЗ.
+
+**Ø60 на 7,0 л.** На 3200 об/мин скорость 51 м/с — ниже, чем в штатном К-88АМ (52–55); напор до 1,4% MAP добирает турбина, цель наддува — MAP после дросселя ([../calc/results.md](../calc/results.md), раздел 5).
+
+## Отклонено: электронный дроссель
+
+Ниже — разбор до решения, как справка. Настройки rusEFI сверены с исходниками rusefi/rusefi 009fa2f.
+
+### Итог
 
 - **Рекомендуем один дроссель на оба мотора — Bosch 0 280 750 129** с газового КАМАЗ-820: Ø69, по воздуху КАМАЗ-820 близок к нашему 7,0 л, а 6,0 л получает запас (решение пользователя 2026-09-27, если устроит цена: 22–25 тыс. ₽, у дилеров под заказ). Фланец и распиновку снять с купленной детали.
 - **Дешёвый вариант для 6,0 л — Bosch 0 280 750 151** с УАЗ ЗМЗ-409: Ø60, семейство DV-E5, самое ходовое на rusEFI, 12–16 тыс. ₽ в любом УАЗ-магазине; аналог Cartronic CRTR0122407.
@@ -11,7 +30,7 @@
 - **Холостой ход** держит сама заслонка, **ограничитель оборотов** — тоже она. **Ручной газ** — кнопка или потенциометр через Lua.
 - Обязательно включить защиту от заклинивания `etbJamTimeout`: по умолчанию она выключена.
 
-## Дроссели
+### Дроссели
 
 | Дроссель | Номер | Ø, мм | Фланец | Разъём | Цена в РФ |
 |---|---|---|---|---|---|
@@ -26,7 +45,7 @@
 
 **Надёжность:** ресурс дросселя ГАЗели продавец оценивает в 200–250 тыс. км [tent3302]; на УАЗ Е3 отказ лечили только заменой 0 280 750 151 [drive2-UAZ]. Запасной дроссель возить с собой.
 
-## Педаль
+### Педаль
 
 Что известно:
 - **ГАЗель Бизнес Е4** (номер не найден): два резистивных канала со своими питанием и массой, сигналы 1:2 (отпущена 0,97/0,49 В, в пол 3,67/1,84 В); разъём 6 контактов: 1 +5 В канала 2, 2 +5 В канала 1, 3 сигнал 1, 4 масса 1, 5 масса 2, 6 сигнал 2. Минус — протирается дорожка, ошибка P2138 [galant].
@@ -37,7 +56,7 @@
 
 Искать дальше: «педаль акселератора электронная ГАЗон Next номер», «модуль педали акселератора КАМАЗ 65115 Евро-4», «педаль газа ПАЗ Cummins распиновка».
 
-## rusEFI
+### rusEFI
 
 **Платы.** Proteus: 2 H-моста TLE9201, мотор ETB1 — black23 контакты 6/7, педаль — white35-17/16, датчики дросселя — white35-24/14, два источника 5 В по 150 мА ([Proteus manual](https://wiki.rusefi.com/Proteus-Manual/), `config/boards/proteus`). uaEFI: 2 DC-драйвера до 6 А, мотор DC1 — A5/A1, педаль — D6/C4, датчики — D13/C14 ([uaEFI wiki](https://wiki.rusefi.com/uaEFI/)). У мотора Bosch пик до 10 А — для DV-E5 связка обычная, для 69 мм отдельного подтверждения нет. Ток моста Proteus в документации не указан.
 
@@ -67,11 +86,11 @@
 
 **Прикрывать дроссель по передачам не нужно:** наддув по передачам уже режется целью давления (`setBoostTargetMult` в [../ecu/zil130.lua](../ecu/zil130.lua)), педаль остаётся педалью.
 
-## Опыт
+### Опыт
 
 Bosch 0 280 750 151 ставили вместо родного на Mercedes M271 — дроссели DV-E5 взаимозаменяемы [drive2-M271]. На УАЗ ЗМЗ-409 Е4 жалуются на задержку отклика [drive2-409]. Электронный дроссель на ЗИЛ, ГАЗ-53, ЗМЗ-511/513 не найден.
 
-## Что не нашлось
+### Что не нашлось
 
 - Номера и распиновки напольных педалей ГАЗон Next, ГАЗ-3309 Cummins, КАМАЗ Евро-4/5, ПАЗ, МАЗ; педалей Лады E-GAS и ГАЗели Next.
 - Номер педали ГАЗели Бизнес Е4, фланец Delphi 28316394.
@@ -80,5 +99,7 @@ Bosch 0 280 750 151 ставили вместо родного на Mercedes M27
 - Ток H-моста Proteus.
 
 ## Источники
+
+[autoopt-406](https://www.autoopt.ru/catalog/018403-drossel_gaz_3110_dv_zmz_406_pekar) · [rusautoopt-406](https://rusautoopt.ru/Drosselnaya-zaslonka-ZMZ-406-Volga-(GAZ-31105_3110)-Pekar-4062_1148100-02.html) · [avtoall-imp](https://www.avtoall.ru/drossel_gaz_3110_dv_zmz_406_impul_s-085939/) · [sparox-tps](https://sparox.ru/catalog/ehlektrika/datchik/406352?instock=0&viewtype=list&sort=1) · [avtoall-tps](https://www.avtoall.ru/datchik_polojeniya_zaslonki_drosselnoiy_zmz_406_rikor-021657/) · [sparox-iac](https://sparox.ru/catalog/undefined/2088848?instock=0&viewtype=list&sort=1) · [rusautoopt-iac](https://rusautoopt.ru/Regulyator-kholostogo-khoda-(RKhKh)-Volga-ZMZ-406-Pegas-406_1147051-02.html) · [osensorax](https://osensorax.ru/posiciya/rhh-zmz-406) · REG69 — таблица источников в [engine-data.md](engine-data.md)
 
 [BoschMS](https://www.bosch-motorsport.com/content/downloads/Raceparts/Resources/pdf/Data%20Sheet_68749835_Electronic_Throttle_Body.pdf) · [rusautoopt-151](https://rusautoopt.ru/Drosselnaya-zaslonka-ZMZ-409-EVRO-3-UAZ-(0280750151)-Bosch-0-280-750-151.html) · [rusautoopt-4216](https://rusautoopt.ru/Drosselnaya-zaslonka-UMZ-4216-GAZel-(biznes)-EVRO-3-(28316394)-Elkar-4216-1148010.html) · [kombat](https://auto.kombat.com.ua/ispolnitelnye-mehanizmy-kompleksnoj-mikroproczessornoj-sistemy-upravleniya-umz-a274-evotech-2-7-gazel-sobol-naznachenie-princzip/) · [galant](http://galantmotors.ru/view_article.php?id=18) · [tent3302](https://tent3302.ru/drosselnaya-zaslonka-gazel/) · [importkama](https://importkama.ru/catalog/bosch/0280750129-drossel-bosch.html) · [kamazik](https://www.kamazik.ru/zp/gruppa_11_sistema_pitaniya/drosselnaya_zaslonka_kamaz/) · [kamaz.ru 820.60](https://kamaz.ru/production/related/semeystvo-gazovykh-dvigateley-kamaz-820-60/) · [drive2-M271](https://www.drive2.ru/l/503840209385816588/) · [drive2-UAZ](https://www.drive2.ru/l/671780989801872443/) · [drive2-409](https://www.drive2.ru/l/3638862/) · [Vault](https://github.com/rusefi/rusefi/wiki/Vault-Of-Electronic-Throttle-Bodies-ETB) · [ConfGuide](https://wiki.rusefi.com/Electronic-Throttle-Body-Configuration-Guide/) · исходники [rusefi/rusefi](https://github.com/rusefi/rusefi) @009fa2f

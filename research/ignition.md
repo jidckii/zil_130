@@ -4,7 +4,7 @@
 
 ## Итог
 
-- **Плата — Proteus.** У него 12 выходов под «умные» катушки (Ign1–Ign12 на чёрном 35-контактном разъёме) ([Proteus Manual](https://wiki.rusefi.com/Proteus-Manual/), `config/boards/proteus/connectors/black35.yaml`). У uaEFI таких выходов 6, выводы IGN7/IGN8 — слабые low-side под реле ([uaEFI](https://wiki.rusefi.com/uaEFI/), `hellen/uaefi/connectors/B.yaml`): на V8 с ним — только парная искра. Вместе с 8 + 8 форсунками и электронным дросселем (`petrol-injection.md`, `electronic-throttle.md`) это делает Proteus единственным подходящим вариантом.
+- **Плата — Proteus.** У него 12 выходов под «умные» катушки (Ign1–Ign12 на чёрном 35-контактном разъёме) ([Proteus Manual](https://wiki.rusefi.com/Proteus-Manual/), `config/boards/proteus/connectors/black35.yaml`). У uaEFI таких выходов 6, выводы IGN7/IGN8 — слабые low-side под реле ([uaEFI](https://wiki.rusefi.com/uaEFI/), `hellen/uaefi/connectors/B.yaml`): на V8 с ним — только парная искра. Вместе с 8 + 8 форсунками (`petrol-injection.md`) это делает Proteus единственным подходящим вариантом.
 - **Катушки — GM LS truck D585** (GM 12570616 = 12611424, 19279918; аналоги Delphi GN10119, Bremi 20410, Patron PCI1157), 8 шт. + 1 в запас, по 4 на кронштейн на ряд.
 - Отечественной катушки со встроенным ключом и выходом под провод не нашлось: у ЗМЗ и ВАЗ катушки пассивные.
 
