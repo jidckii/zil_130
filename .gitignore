@@ -8,6 +8,7 @@ __pycache__/
 *.FCBak
 research/sources/*.pdf
 research/sources/*.djvu
+research/sources/ocr/gas_*.txt
 .claude/settings.local.json
 cad/out/
 .playwright-mcp/
