@@ -1,4 +1,4 @@
-"""Скелет впускного коллектора ЗИЛ-130/375: продольный ресивер, 8 раннеров, временные фланцы.
+"""Скелет впускного коллектора ЗИЛ-130/375: продольный ресивер, 8 раннеров, фланцы по оценке с фото.
 
 Запуск: uv run python cad/manifold_skeleton.py  → cad/out/*.step
 Оси: X вдоль коленвала назад от оси 1-го цилиндра, Y вправо, Z вверх от оси коленвала.
@@ -16,16 +16,25 @@ PLENUM_VOL = 5.0e6  # мм³; calc/results.md: 4,2–7,0 л
 THROTTLE_D = 60.0  # ГАЗ Ø60; для 7 л лучше 71 (calc/results.md)
 WALL = 3.0  # пластиковый макет
 
-# Заглушки до замера на двигателе и скана прокладки: грубая прикидка, не данные.
-BANK_OFFSET = 25.0  # левый ряд сдвинут назад: шатуны стоят рядом на одной шейке
-FLANGE_Y = 170.0  # от оси двигателя до центра окна на фланце
-FLANGE_Z = 280.0  # центр окна над осью коленвала
-FLANGE_TILT = 45.0  # нормаль фланца над горизонталью, град
-PORT_W, PORT_H, PORT_R = 36.0, 44.0, 6.0  # окно: вдоль вала × поперёк, радиус угла
-PORT_PITCH = 50.0  # между центрами спаренных окон
-PLENUM_W, PLENUM_Z = 140.0, 430.0  # ширина ресивера и высота его оси
+BANK_OFFSET = 29.0  # левый ряд назад на ширину головки шатуна [TU66 печ.188], [D73 дж.21]
+
+# Оценки по фото прокладок и разрезам D73/RE85 (research/engine-data.md, раздел 12), ±2–5 мм.
+# Заменить сканом прокладки или заводским чертежом ГБЦ.
+FLANGE_Y = 140.0  # от оси двигателя до линии центров окон
+FLANGE_Z = 316.0  # линия центров окон над осью коленвала
+FLANGE_TILT = 56.0  # нормаль фланца над горизонтом: плоскость 34° к горизонту
+PORT_W, PORT_H, PORT_R = 30.0, 56.0, 9.0  # окно прокладки: вдоль вала × поперёк, радиус угла
+PORT_PITCH = 34.0  # между центрами спаренных окон
+# Шпильки вертикальные: (вдоль от центра головки, поперёк от линии окон, «+» к блоку).
+STUDS = ((-282, 30), (282, 30), (-197, 8), (197, 8), (-74, -1), (0, 0), (70, -1))
+WATER = ((-250, 21), (250, 21))  # водяные окна, отверстие прокладки ≈Ø35
+WATER_D, STUD_HOLE = 35.0, 11.0
+FLANGE_ALONG, FLANGE_ACROSS = 305.0, (-40.0, 52.0)  # полудлина и границы плиты поперёк
+
+PLENUM_W, PLENUM_Z = 140.0, 480.0  # решение по центрифуге масла ещё не принято
 
 FLANGE_T, FLANGE_MARGIN = 12.0, 40.0
+HEAD_CENTER = 1.5 * PITCH  # середина между цилиндрами 2–3
 BASE = (Align.CENTER, Align.CENTER, Align.MIN)
 STRAIGHT = 60.0  # прямой участок у фланца: переход окно → круг, штуцер форсунки
 BOSS_AT, BOSS_ANGLE, BOSS_D, BOSS_HOLE = 35.0, 30.0, 14.0, 5.0  # штуцер М6 Valtek: отверстие под метчик
@@ -33,13 +42,20 @@ BOSS_AT, BOSS_ANGLE, BOSS_D, BOSS_HOLE = 35.0, 30.0, 14.0, 5.0  # штуцер �
 
 def port_xs(side):
     """Окна по ходу головки: вып–вп–вп–вып–вып–вп–вп–вып [D73 дж.61] → впуск спарен у середины пары цилиндров."""
-    shift = 0.0 if side > 0 else BANK_OFFSET
-    return [shift + mid + d * PORT_PITCH / 2 for mid in (PITCH / 2, 2.5 * PITCH) for d in (-1, 1)]
+    return [flange_point(side, pair + d * PORT_PITCH / 2, 0).X for pair in (-PITCH, PITCH) for d in (-1, 1)]
 
 
 def flange_normal(side):
     t = math.radians(FLANGE_TILT)
     return Vector(0, -side * math.cos(t), math.sin(t))
+
+
+def flange_point(side, along, across):
+    """Точка на плоскости фланца; across > 0 — к нижней кромке (к блоку)."""
+    t = math.radians(FLANGE_TILT)
+    to_block = Vector(0, -side * math.sin(t), -math.cos(t))
+    shift = 0.0 if side > 0 else BANK_OFFSET
+    return Vector(HEAD_CENTER + shift + along, side * FLANGE_Y, FLANGE_Z) + to_block * across
 
 
 def plenum_box():
@@ -75,18 +91,32 @@ def injector_boss(side, x, hole):
     return Plane(c, z_dir=axis) * Pos(0, 0, RUNNER_D / 2 - 2) * Cylinder(BOSS_D / 2, WALL + 17, align=BASE)
 
 
+def flange(side):
+    """Плита фланца, вертикальные отверстия шпилек, водяные окна со штуцерами под шланг."""
+    n = flange_normal(side)
+    mid = (FLANGE_ACROSS[0] + FLANGE_ACROSS[1]) / 2
+    origin = flange_point(side, 0, mid) + n * (FLANGE_T / 2)
+    plane = Plane(origin, (1, 0, 0), n)
+    height = FLANGE_ACROSS[1] - FLANGE_ACROSS[0]
+    plate = plane * Box(2 * FLANGE_ALONG, height, FLANGE_T)
+    holes = [Pos(*flange_point(side, a, c)) * Cylinder(STUD_HOLE / 2, 200) for a, c in STUDS]
+    spigots, water = [], []
+    for a, c in WATER:
+        w = Plane(flange_point(side, a, c), (1, 0, 0), n)
+        spigots.append(w * Cylinder(WATER_D / 2 + WALL, FLANGE_T + 30, align=BASE))
+        water.append(w * Pos(0, 0, -1) * Cylinder(WATER_D / 2, FLANGE_T + 32, align=BASE))
+    return [plate] + spigots, holes + water
+
+
 def build():
     x0, x1, h = plenum_box()
     cx = (x0 + x1) / 2
-    fluid, outer, lengths = [], [], []
+    fluid, outer, cuts, lengths = [], [], [], []
     for side in (1, -1):
-        n = flange_normal(side)
-        xs = port_xs(side)
-        fx = (xs[0] + xs[-1]) / 2
-        fl = xs[-1] - xs[0] + PORT_W + 2 * FLANGE_MARGIN
-        origin = Vector(fx, side * FLANGE_Y, FLANGE_Z) + n * (FLANGE_T / 2)
-        outer.append(Plane(origin, (1, 0, 0), n) * Box(fl, PORT_H + 2 * FLANGE_MARGIN, FLANGE_T))
-        for x in xs:
+        body, holes = flange(side)
+        outer += body
+        cuts += holes
+        for x in port_xs(side):
             f, length = runner(side, x, 0)
             o, _ = runner(side, x, WALL)
             fluid.append(f)
@@ -101,7 +131,7 @@ def build():
     fluid.append(throttle * Pos(0, 0, -WALL - 1) * Cylinder(THROTTLE_D / 2, 62 + WALL, align=BASE))
     body = sum(outer[1:], outer[0])
     air = sum(fluid[1:], fluid[0])
-    return body - air, air, lengths, h
+    return body - air - sum(cuts[1:], cuts[0]), air, lengths, h
 
 
 if __name__ == "__main__":
