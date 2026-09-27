@@ -9,4 +9,3 @@ research/sources/*.pdf
 research/sources/*.djvu
 .claude/settings.local.json
 cad/out/
-research/sources/drawings/
