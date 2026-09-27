@@ -1,11 +1,13 @@
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import MDXContent from '@theme/MDXContent';
 import Manifesto from './_manifesto.mdx';
 import styles from './index.module.css';
 
 export default function Home() {
+  const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
       title="Открытый проект"
@@ -23,6 +25,9 @@ export default function Home() {
             </Link>
             <Link className={clsx('button button--outline button--lg', styles.outline)} to="/docs/contributing">
               Как помочь
+            </Link>
+            <Link className={clsx('button button--outline button--lg', styles.outline)} to={siteConfig.customFields.repo}>
+              GitHub
             </Link>
           </div>
         </div>

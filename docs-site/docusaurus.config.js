@@ -24,6 +24,7 @@ export default {
   organizationName: 'jidckii',
   projectName: 'zil_130',
   trailingSlash: false,
+  customFields: {repo},
 
   future: {v4: true},
 
