@@ -29,13 +29,13 @@ EXIT_Y = 110.0
 EXIT_SPREAD = 25.0  # у окна пара через 32,9 — круги Ø42 разводим, иначе каналы сольются
 TRANSITION = 40.0  # окно 27,8×56,8 → круг
 INJECTOR_AT = 25.0  # ближе к окну, чтобы шланг форсунки прошёл снаружи площадки
-PAD_T, PAD_IN, PAD_OUT = 16.0, 34.0, 25.0  # площадка от оси выходов внутрь / наружу
+PAD_T, PAD_IN, PAD_OUT = 16.0, 42.0, 25.0  # площадка от оси выходов внутрь / наружу
 PAD_BOLT = 6.8  # под метчик М8
 SEAT_D = 22.0  # горизонтальная опора гайки М10×1 на вертикальной шпильке
 
 WATER_FRONT = (23.0, 30.0)  # канал головки Ø23 [D73 дж.64] → шланг к термостату
 WATER_REAR = (8.0, 12.0)  # как дозирующая вставка Ø8 [D73 дж.65–66]; правый — к компрессору
-NECK = (-25.0, -45.0, 40.0, 445.0)  # маслозаливная горловина: X, Y, Ø, верх — за передней площадкой
+NECK = (425.0, 40.0, 36.0, 445.0)  # горловина: X, Y, Ø, верх — за ресивером у ребра; спереди над ней встал бы дроссель
 BREATHER = (-10.0, 30.0, 13.0, 19.0, 360.0)  # сапун: X, Y, Ø канала, Ø штуцера, верх
 TRAP = (70.0, 60.0, 22.0)  # маслоуловитель под плитой, щель 50×10 в задней стенке
 
@@ -64,16 +64,21 @@ def channel(side, port, x, grow):
     return body + sweep(Plane(a, (1, 0, 0), n) * Circle(r), path=path), TRANSITION + path.length
 
 
+def seat_rise():
+    """Верх опоры гайки над точкой шпильки на плоскости фланца: толщина по вертикали + наклон под опорой."""
+    nz = flange_normal(1).Z
+    return FLANGE_T / nz + SEAT_D / 2 * math.tan(math.radians(90) - math.asin(nz))
+
+
 def side_flange(side):
     n = flange_normal(side)
     mid = sum(FLANGE_ACROSS) / 2
     plane = Plane(flange_point(side, 0, mid) + n * (FLANGE_T / 2), (1, 0, 0), n)
     plate = plane * Box(2 * FLANGE_ALONG, FLANGE_ACROSS[1] - FLANGE_ACROSS[0], FLANGE_T)
-    rise = FLANGE_T / n.Z + SEAT_D / 2 * math.tan(math.radians(90) - math.asin(n.Z))
     seats, holes = [], []
     for a, c in STUDS:
         p = flange_point(side, a, c)
-        seats.append(Pos(p.X, p.Y, p.Z) * Cylinder(SEAT_D / 2, rise, align=BASE))
+        seats.append(Pos(p.X, p.Y, p.Z) * Cylinder(SEAT_D / 2, seat_rise(), align=BASE))
         holes.append(Pos(p.X, p.Y, p.Z - 50) * Cylinder(STUD_HOLE / 2, 150, align=BASE))
     return [plate] + seats, holes
 
@@ -92,13 +97,16 @@ def water(side):
     return [fb, rb], [fh, rh]
 
 
-def pad(side):
+def pad_bolts(side):
+    """Болты только между парами и по краям: над парой проходят раннеры ресивера, ключ туда не пролезет."""
+    hc = flange_point(side, 0, 0).X
+    return [(hc + dx, side * y) for dx in (-195, 0, 195) for y in (EXIT_Y, EXIT_Y - 33)]
+
+
+def pad(side, z_top=SPLIT_Z, t=PAD_T):
     hc = flange_point(side, 0, 0).X
     y0, y1 = sorted((side * (EXIT_Y - PAD_IN), side * (EXIT_Y + PAD_OUT)))
-    body = Pos(hc, (y0 + y1) / 2, SPLIT_Z - PAD_T / 2) * Box(2 * (195 + 12), y1 - y0, PAD_T)
-    bolts = [(hc + dx, side * EXIT_Y) for dx in (-195, 0, 195)]
-    bolts += [(flange_point(side, pair, 0).X, side * (EXIT_Y - 26)) for pair in (-PITCH, PITCH)]
-    return body, [Pos(x, y, SPLIT_Z - PAD_T - 1) * Cylinder(PAD_BOLT / 2, PAD_T + 2, align=BASE) for x, y in bolts]
+    return Pos(hc, (y0 + y1) / 2, z_top - t / 2) * Box(2 * (195 + 12), y1 - y0, t)
 
 
 def floor():
@@ -153,9 +161,8 @@ def build():
         for bodies, holes in (side_flange(side), water(side)):
             outer += bodies
             cuts += holes
-        body, bolts = pad(side)
-        outer.append(body)
-        cuts += bolts
+        outer.append(pad(side))
+        cuts += [Pos(x, y, SPLIT_Z - PAD_T - 1) * Cylinder(PAD_BOLT / 2, PAD_T + 2, align=BASE) for x, y in pad_bolts(side)]
         for port, x in exits(side):
             o, _ = channel(side, port, x, WALL)
             f, length = channel(side, port, x, 0)
