@@ -87,12 +87,12 @@ def runner(side, x, grow):
     return port + bend, STRAIGHT + path.length
 
 
-def injector_boss(side, x, hole):
+def injector_boss(side, x, hole, at=BOSS_AT):
     n = flange_normal(side)
     up = Vector(0, side * n.Z, -side * n.Y)
     b = math.radians(BOSS_ANGLE)
     axis = up * math.cos(b) + n * math.sin(b)
-    c = Vector(x, side * FLANGE_Y, FLANGE_Z) + n * BOSS_AT
+    c = Vector(x, side * FLANGE_Y, FLANGE_Z) + n * at
     if hole:
         return Plane(c, z_dir=axis) * Cylinder(BOSS_HOLE / 2, 60, align=BASE)
     return Plane(c, z_dir=axis) * Pos(0, 0, RUNNER_D / 2 - 2) * Cylinder(BOSS_D / 2, WALL + 17, align=BASE)
