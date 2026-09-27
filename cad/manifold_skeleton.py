@@ -17,7 +17,7 @@ THROTTLE_D = 60.0  # ГАЗ Ø60; для 7 л лучше 71 (calc/results.md)
 THROTTLE_BOLTS, THROTTLE_HOLE = 70.0, 9.0  # ЗМЗ-406 4062.1148100: 4 отв. Ø9 по квадрату 70×70 (research/engine-data.md, 12.3)
 WALL = 3.0  # пластиковый макет
 
-BANK_OFFSET = 29.0  # левый ряд назад на ширину головки шатуна [TU66 печ.188], [D73 дж.21]
+BANK_OFFSET = 29.0  # левый ряд вперёд на ширину головки шатуна [BD л.1 вид сверху], [D73 дж.21]
 
 # Чертёж ГБЦ 130-1003012-20СБ [HD87] (research/engine-data.md, раздел 13).
 DECK = 295.0 + 1.5  # ось КВ → разъём блока [раздел 12.2] + прокладка ГБЦ в сжатом виде (допущение)
@@ -61,7 +61,7 @@ def flange_point(side, along, across):
     """Точка на плоскости фланца; across > 0 — к нижней кромке (к блоку)."""
     t = math.radians(FLANGE_TILT)
     to_block = Vector(0, -side * math.sin(t), -math.cos(t))
-    shift = 0.0 if side > 0 else BANK_OFFSET
+    shift = 0.0 if side > 0 else -BANK_OFFSET
     return Vector(HEAD_CENTER + shift + along, side * FLANGE_Y, FLANGE_Z) + to_block * across
 
 
