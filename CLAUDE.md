@@ -8,6 +8,7 @@
 ## Структура
 
 - `docs/` — концепция и решения.
+- `calc/` — расчёты на Python; `results.md` генерируется скриптом, руками не править.
 - `research/engine-data.md` — заводские данные двигателя, у каждой цифры ссылка `[документ стр.]`.
 - `research/prior-art.md` — чужие переделки, рынок, ЭБУ.
 - `research/videos/notes.md` — разбор видео Pshenitsin_v8 inc.; кадры в `keyframes/`.
