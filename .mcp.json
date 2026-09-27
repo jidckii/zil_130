@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "freecad": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "freecad-mcp==0.1.25"
+      ],
+      "env": {}
+    },
+    "build123d": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--python",
+        "3.13",
+        "build123d-mcp==0.3.90"
+      ],
+      "env": {}
+    }
+  }
+}

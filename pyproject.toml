@@ -1,0 +1,12 @@
+[project]
+name = "zil130"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "build123d>=0.13.0",
+    "cantera>=3.2.0",
+    "coolprop>=8.0.0",
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.3",
+    "scipy>=1.18.1",
+]

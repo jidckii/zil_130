@@ -1,0 +1,10 @@
+*.mp4
+*.webm
+*.part
+research/videos/frames/
+.venv/
+__pycache__/
+*.FCBak
+research/sources/*.pdf
+research/sources/*.djvu
+.claude/settings.local.json
