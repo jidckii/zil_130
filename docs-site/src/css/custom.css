@@ -1,0 +1,26 @@
+:root {
+  --ifm-color-primary: #a4492b;
+  --ifm-color-primary-dark: #944227;
+  --ifm-color-primary-darker: #8b3e25;
+  --ifm-color-primary-darkest: #73331e;
+  --ifm-color-primary-light: #b4502f;
+  --ifm-color-primary-lighter: #bc5431;
+  --ifm-color-primary-lightest: #cd6240;
+  --ifm-code-font-size: 95%;
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #e0784f;
+  --ifm-color-primary-dark: #dc6537;
+  --ifm-color-primary-darker: #d95b2b;
+  --ifm-color-primary-darkest: #b94a21;
+  --ifm-color-primary-light: #e48b67;
+  --ifm-color-primary-lighter: #e79573;
+  --ifm-color-primary-lightest: #edb097;
+}
+
+/* Рендеры и сканы на белом фоне — в тёмной теме оставляем им светлую подложку */
+.markdown img {
+  background: #fff;
+  border-radius: 6px;
+}

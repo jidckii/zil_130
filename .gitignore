@@ -1,5 +1,6 @@
 *.mp4
 *.webm
+!docs-site/static/**/*.mp4
 *.part
 research/videos/frames/
 .venv/

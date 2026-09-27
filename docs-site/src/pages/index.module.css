@@ -1,0 +1,27 @@
+.hero {
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.outline {
+  color: #fff;
+  border-color: #fff;
+}
+
+.outline:hover {
+  color: var(--ifm-color-primary-darkest);
+  background: #fff;
+}
+
+.main {
+  max-width: 980px;
+  padding-top: 2rem;
+  padding-bottom: 3rem;
+}
