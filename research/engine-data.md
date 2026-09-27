@@ -488,7 +488,7 @@
 | Верх штатного воздушного фильтра | ≈+820…870; фильтр соединён гофрой с воздуховодом в капоте, то есть капот прямо над ним | расчёт; [RE85 дж.44 рис.29] |
 | Ширина по выпускным коллекторам / клапанным крышкам | ≈700 / ≈650 | [D73 рис.22] |
 | Дроссель ЗМЗ-406 (4062.1148100) | Ø60, 4 отверстия Ø9 по квадрату 70×70 | [avtoall](https://www.avtoall.ru/drossel_gaz_3110_dv_zmz_406_pekar-018403/), [azlk-team](https://azlk-team.ru/articles/tuning/ustanovka-drosselja-ot-dvigatelja-zmz-406-na-moskvich-s-dvigatelem-reno-f3r/) — продавец и блог |
-| Шаг шпилек карбюратора К-88/К-89/К-90 | не найден; прокладка 121-1107027 по кроссу = 53-1107015 (ГАЗ-53) | [balrti](https://balrti.ru/catalog/dlya_a_m_zil/prokladka_pod_karbyurator_nizhnyaya_k_88_a_m_zil_dop_art_121_1107027_53_1107015_/) |
+| Шаг шпилек карбюратора К-88/К-89/К-90 | не найден и повторным поиском (Пекар, uazbuka, drive2, магазины РТИ). Фланец ЗИЛ и ГАЗ-53 общий: К135-1107920 ставится на ЗИЛ на штатные 4 шпильки М8 [tmpekar]. Прокладка 121-1107027 — асбостальной лист 1,75 мм [K89 дж.214]. По пропорциям фото прокладки 53-1107015 шаг шпилек ≈92–103 × 47–52 мм — **оценка, мерить**. Камеры К-126/К-135 Ø34 (`sources/web2_k126_k135_tihomirov_uazbuka.pdf`) | [balrti](https://balrti.ru/catalog/dlya_a_m_zil/prokladka_pod_karbyurator_nizhnyaya_k_88_a_m_zil_dop_art_121_1107027_53_1107015_/) |
 
 Рисунки: `figures/dv73_djvu050_fig22_razmetka_vysot_ot_osi_kv.png`, `dv73_djvu051_fig23_razmetka_uzlov_vdol_dvigatelya.png`, `re85_djvu024_fig10_prodolnyj_razrez_legenda_uzlov.png`, `kd67_djvu150_K88_osnovnye_dannye_vysota_156.png`, `dv73_djvu158_fig73_vozduhoochistitel_VM16.png`, `re85_djvu044_fig29_podvod_vozduha_k_filtru_cherez_kapot.png`.
 

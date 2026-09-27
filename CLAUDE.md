@@ -29,3 +29,7 @@
 - MCP `build123d` + скиллы `b123d-*` — CAD кодом, экспорт STEP/STL.
 - Сканы: `djvutxt`/`ddjvu`, `pdftotext`/`pdftoppm`, `ocrmypdf -l rus`.
 - Видео: `uvx --from 'yt-dlp[default]' yt-dlp --js-runtimes node` (системный yt-dlp ловит 403).
+
+## С чего начинать новую сессию
+
+Прочитать `docs/plan.md`, раздел «Продолжить отсюда»: там принятые решения, следующие шаги по порядку и что блокирует каждую задачу.
