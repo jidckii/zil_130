@@ -150,7 +150,7 @@ if __name__ == "__main__":
     receiver_sheet(rec).save(drawings / "receiver.svg")
     tmp = ROOT / "cad" / "out"
     tmp.mkdir(exist_ok=True)
-    steps = {"valley_plate.step": plate, "receiver.step": rec, "intake_assembly.step": plate + rec}
+    steps = {"valley_plate.step": plate, "receiver.step": rec, "intake_assembly.step": Compound([plate, rec])}
     (STATIC / "cad").mkdir(exist_ok=True)
     with zipfile.ZipFile(STATIC / "cad" / "intake-step.zip", "w", zipfile.ZIP_DEFLATED) as z:
         for name, shape in steps.items():

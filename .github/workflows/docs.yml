@@ -26,6 +26,8 @@ jobs:
       - run: sudo apt-get update -q && sudo apt-get install -y --no-install-recommends fonts-dejavu-core
       - run: uv run python cad/valley_plate.py
       - run: uv run python cad/receiver.py
+      - run: uv run python cad/cast.py
+      - run: uv run python cad/welded.py
       - run: uv run python cad/drawings.py
       - uses: actions/upload-artifact@v7
         with:

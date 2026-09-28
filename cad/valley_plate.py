@@ -7,7 +7,7 @@
 import math
 from pathlib import Path
 
-from build123d import (Box, Circle, Cylinder, Keep, Plane, Polyline, Pos, RectangleRounded, Spline, Vector, Wire,
+from build123d import (Box, Circle, Cylinder, Keep, Line, Plane, Polyline, Pos, RectangleRounded, Spline, Vector, Wire,
                        export_step, export_stl, extrude, loft, make_face, sweep)
 
 from head_flange import (BASE, FLANGE_T, PITCH, PORT_H, PORT_PITCH, PORT_R, PORT_W, RUNNER_D, STUD_HOLE,
@@ -60,10 +60,11 @@ def channel(side, port, x, grow):
     b = Vector(x, side * EXIT_Y, SPLIT_Z + 2)
     start = port - n * (1 if grow == 0 else 0)
     r = RUNNER_D / 2 + grow
-    path = Wire([Spline(a, b, tangents=(n, (0, 0, 1)))])
+    # Прямой хвост за разъём: иначе торец трубы совпадёт с плоскостью реза при припуске на обработку.
+    path = Wire([Spline(a, b, tangents=(n, (0, 0, 1))), Line(b, b + Vector(0, 0, 20))])
     body = loft([Plane(start, (1, 0, 0), n) * RectangleRounded(PORT_W + 2 * grow, PORT_H + 2 * grow, PORT_R + grow),
                  Plane(a, (1, 0, 0), n) * Circle(r)])
-    return body + sweep(Plane(a, (1, 0, 0), n) * Circle(r), path=path), TRANSITION + path.length
+    return body + sweep(Plane(a, (1, 0, 0), n) * Circle(r), path=path), TRANSITION + path.edges()[0].length
 
 
 def seat_rise():
@@ -122,32 +123,34 @@ def pad(side, z_top=SPLIT_Z, t=PAD_T):
     return Pos(hc, (y0 + y1) / 2, z_top - t / 2) * Box(2 * (195 + 12), y1 - y0, t)
 
 
-def floor():
+def floor(stock=0.0):
     rib = [(x + RIB_LAND, y) for y, x in RIB]
     outline = Polyline((BLOCK_FRONT, -130), (rib[0][0], -130), *rib, (rib[-1][0], 130), (BLOCK_FRONT, 130), close=True)
-    slab = Pos(0, 0, VALLEY_Z) * extrude(make_face(outline), FLOOR_T)
+    slab = Pos(0, 0, VALLEY_Z - stock) * extrude(make_face(outline), FLOOR_T + stock)
     return slab, Pos(*DOWEL, VALLEY_Z - 1) * Cylinder(4, FLOOR_T + 2, align=BASE)
 
 
-def crankcase_ports():
+def crankcase_ports(wall=WALL, drill=True):
     """Горловина, сапун и маслоуловитель под ним."""
     x, y, d, top = NECK
     bx, by, bd, bod, btop = BREATHER
     lx, ly, lz = TRAP
     trap = Pos(bx, by, VALLEY_Z - lz) * Box(lx, ly, lz + 1, align=BASE)
-    trap_in = Pos(bx, by, VALLEY_Z - lz + WALL) * Box(lx - 2 * WALL, ly - 2 * WALL, lz, align=BASE)
-    slot = Pos(bx + lx / 2, by, VALLEY_Z - lz + WALL) * Box(2 * WALL + 2, 50, 10, align=BASE)
+    trap_in = Pos(bx, by, VALLEY_Z - lz + wall) * Box(lx - 2 * wall, ly - 2 * wall, lz, align=BASE)
+    slot = Pos(bx + lx / 2, by, VALLEY_Z - lz + wall) * Box(2 * wall + 2, 50, 10, align=BASE)
     bodies = [Pos(x, y, VALLEY_Z) * Cylinder(d / 2 + 4, top - VALLEY_Z, align=BASE),
               Pos(bx, by, VALLEY_Z) * Cylinder(bod / 2, btop - VALLEY_Z, align=BASE), trap]
-    cuts = [Pos(x, y, VALLEY_Z - 1) * Cylinder(d / 2, top - VALLEY_Z + 2, align=BASE),
-            Pos(bx, by, VALLEY_Z - 1) * Cylinder(bd / 2, btop - VALLEY_Z + 2, align=BASE), trap_in, slot]
+    cuts = [Pos(x, y, VALLEY_Z - 1) * Cylinder(d / 2, top - VALLEY_Z + 2, align=BASE), trap_in, slot]
+    if drill:
+        cuts.append(Pos(bx, by, VALLEY_Z - 1) * Cylinder(bd / 2, btop - VALLEY_Z + 2, align=BASE))
     return bodies, cuts
 
 
-def valley_side(shape):
+def valley_side(shape, stock=0.0):
     """Всё, что зашло за плоскость фланца головки, срезаем: плита ложится на головки, а не в них."""
     for side in (1, -1):
-        shape = shape.split(Plane(flange_point(side, 0, 0), z_dir=flange_normal(side)), keep=Keep.TOP)
+        n = flange_normal(side)
+        shape = shape.split(Plane(flange_point(side, 0, 0) - n * stock, z_dir=n), keep=Keep.TOP)
     return shape
 
 
@@ -165,30 +168,38 @@ def keepout():
     return parts
 
 
-def build():
+def build(wall=WALL, stock=0.0, drill=True, body=None):
+    """wall — стенка каналов; stock — припуск на привалочные плоскости; drill=False — без отверстий под сверловку
+    и резьбу (заготовка-отливка); body(side, port, x) — своё тело вокруг канала вместо трубы (сварной вариант)."""
     outer, cuts, lengths = [], [], []
-    slab, dowel = floor()
+    slab, dowel = floor(stock)
     outer.append(slab)
-    cuts.append(dowel)
+    drilled = [dowel]
     for side in (1, -1):
-        for bodies, holes in (side_flange(side), water(side)):
-            outer += bodies
-            cuts += holes
-        outer.append(pad(side))
-        cuts += [Pos(x, y, SPLIT_Z - PAD_T - 1) * Cylinder(PAD_BOLT / 2, PAD_T + 2, align=BASE) for x, y in pad_bolts(side)]
+        bodies, holes = side_flange(side)
+        outer += bodies
+        drilled += holes
+        bodies, holes = water(side)
+        outer += bodies
+        drilled += holes
+        outer.append(pad(side, z_top=SPLIT_Z + stock, t=PAD_T + stock))
+        drilled += [Pos(x, y, SPLIT_Z - PAD_T - 1) * Cylinder(PAD_BOLT / 2, PAD_T + stock + 2, align=BASE)
+                    for x, y in pad_bolts(side)]
         for port, x in exits(side):
-            o, _ = channel(side, port, x, WALL)
+            o = body(side, port, x) if body else channel(side, port, x, wall)[0]
             f, length = channel(side, port, x, 0)
             outer.append(o)
             cuts.append(f)
             lengths.append(length)
             outer.append(gas_fitting(side, port, x, hole=False))
-            cuts.append(gas_fitting(side, port, x, hole=True))
+            drilled.append(gas_fitting(side, port, x, hole=True))
+    if drill:
+        cuts += drilled
     part = sum(outer[1:], outer[0]) - sum(cuts[1:], cuts[0])
-    part = part.split(Plane((0, 0, SPLIT_Z), z_dir=(0, 0, 1)), keep=Keep.BOTTOM)
-    bodies, holes = crankcase_ports()
+    part = part.split(Plane((0, 0, SPLIT_Z + stock), z_dir=(0, 0, 1)), keep=Keep.BOTTOM)
+    bodies, holes = crankcase_ports(wall, drill)
     part = sum(bodies, part) - sum(holes[1:], holes[0])
-    return valley_side(part), lengths
+    return valley_side(part, stock), lengths
 
 
 if __name__ == "__main__":
