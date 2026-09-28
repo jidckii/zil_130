@@ -9,8 +9,7 @@ from pathlib import Path
 from build123d import Box, Circle, Cylinder, Keep, Plane, Pos, Spline, Vector, Wire, export_step, export_stl, sweep
 
 from manifold_skeleton import BASE, PLENUM_VOL, RUNNER_D, STUDS, WALL, flange_point
-from valley_plate import (EXIT_Y, NECK, SPLIT_Z, build as build_plate, exits, keepout, pad, pad_bolts, petrol_keepout,
-                          seat_rise)
+from valley_plate import (EXIT_Y, NECK, SPLIT_Z, build as build_plate, exits, keepout, pad, pad_bolts, seat_rise)
 
 UP_T = 12.0
 BOLT_CLEAR = 9.0  # М8
@@ -23,10 +22,10 @@ THROTTLE_OPENING, THROTTLE_BOLTS = 60.0, 70.0
 THROTTLE_PAD_T, THROTTLE_TAP = 12.0, 6.8
 THROTTLE_BODY = (130.0, 100.0, 75.0)  # габарит с сектором троса и ДПДЗ по бокам: Y, Z, длина — оценка
 # Сверху, X от передней стенки: М12×1,5 под датчик или переходник на штуцер, М22×1,5 — штуцер шланга РХХ-60
-# (диаметр шланга снять с детали). Редуктор и регулятор держат давление над MAP. Картерные газы — в середину:
+# (диаметр шланга снять с детали). Редуктор держит давление над MAP. Картерные газы — в середину:
 # подальше от заслонки и ровнее по цилиндрам [D73 дж.110].
 PORTS = {"ДАД": (40.0, -25.0, 10.2), "ДТВ": (80.0, -25.0, 10.2), "газовый редуктор": (40.0, 25.0, 10.2),
-         "бензиновый регулятор": (80.0, 25.0, 10.2), "РХХ": (130.0, 0.0, 20.4), "картерные газы": (204.0, 0.0, 10.2)}
+         "РХХ": (130.0, 0.0, 20.4), "картерные газы": (204.0, 0.0, 10.2)}
 HEAD_PORT = 120.0  # канал ГБЦ, оценка по [HD87 л.1 И1–И1] (engine-data.md, раздел 13)
 SOCKET_BOLT, SOCKET_NUT = 9.5, 12.0  # радиус торцевой головки: М8 (13 мм), гайка М10×1 (17 мм)
 
@@ -103,14 +102,12 @@ if __name__ == "__main__":
     assert len(air.solids()) == 8, "раннеры пересекаются"
     plate, plate_lengths = build_plate()
     assert overlap(part, plate) < 1, "ресивер залез в плиту"
-    injectors = petrol_keepout()
-    assert all(overlap(part, k) < 1 for k in injectors), "ресивер задевает бензиновые форсунки или рампы"
     ko = keepout()
     for name, k in (("трамблёр с приводом", ko[:4]), ("клапанные крышки", ko[4:])):
         gap = min(part.distance_to(s) for s in k)
         assert gap > 0, f"ресивер задевает: {name}"
         print(f"Зазор до {name}: {gap:.1f} мм")
-    blocked = [t for t in access() if overlap(part + throttle, t) > 1 or any(overlap(k, t) > 1 for k in injectors)]
+    blocked = [t for t in access() if overlap(part + throttle, t) > 1]
     assert not blocked, f"сверху не подлезть в {len(blocked)} местах"
     out = Path(__file__).parent / "out"
     out.mkdir(exist_ok=True)

@@ -35,7 +35,7 @@
 
 | Редуктор | Расход / мощность | Выход | Под наддувом | Вердикт |
 |---|---|---|---|---|
-| **Tomasetto AT12 Super / EVO Super** | до 250 кВт, **70 кг/ч CH4** при T > −10 °C ([каталог](https://www.tomasettoindia.com/SystemAppResource/PDF/all_168_1_Catalogo_Riduttori_CNG_Low.pdf)) | 120–250 кПа (EVO 150–250) «referred to the MAP» | держит перепад относительно MAP, предельный MAP не указан | **годится один**: загрузка 75% на 6 л и 88% на 7 л; около 14 200 ₽ ([gbomotorshop](https://gbomotorshop.ru/product/reduktor-tomasetto-at12-super-290-kw-s-elektroklapanom-vysokogo-davleniya/)) |
+| **Tomasetto AT12 Super / EVO Super** | до 250 кВт, **70 кг/ч CH4** при T > −10 °C ([каталог](https://www.tomasettoindia.com/SystemAppResource/PDF/all_168_1_Catalogo_Riduttori_CNG_Low.pdf)) | 120–250 кПа (EVO 150–250) «referred to the MAP» | держит перепад относительно MAP, предельный MAP не указан | **годится один**: загрузка 75% на 6 л и 88% на 7 л; около 14 200 ₽ за 24-вольтовую версию, 12 В — ниже ([gbomotorshop](https://gbomotorshop.ru/product/reduktor-tomasetto-at12-super-290-kw-s-elektroklapanom-vysokogo-davleniya/)) |
 | Rail Tyrion | 250 кВт при давлении в баллоне > 100 бар ([TDS](https://cloud.railgroup.it/Rail_TDS_CNG_Reducer_Tyrion.pdf)) | 2–8 бар, штуцер MAP | да | годится, в том числе под рампу высокого давления |
 | Hana H6009 | 254 кВт ([hanaems](http://hanaems.com/h6009-cng-reducer/)) | 1,2–1,8 или 6 бар | вакуумный штуцер | годится |
 | BRC Zenith CNG | 150–230 кВт, данные расходятся | Δp 2,0–2,5 бар к коллектору | да | проверить мощность |
@@ -75,7 +75,7 @@
 
 **Связка:**
 - перепад 2,0 бар относительно MAP;
-- Rail IG7 Dakota LHF или Alex Barracuda 130, по одной на цилиндр;
+- Rail IG7 Dakota LHF, по одной на цилиндр (Barracuda 130 для 7,0 л впритык — см. дополнение ниже);
 - один Tomasetto AT12 (EVO) Super, опорная трубка MAP — от ресивера после дросселя, подогрев отдельной линией антифриза;
 - датчик температуры газа на рампе;
 - P&H-драйвер с пиком не меньше 5 А;

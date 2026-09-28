@@ -1,6 +1,7 @@
 export default {
   repo: [
-    {type: 'doc', id: 'docs/plan', label: 'План и этапы'},
+    {type: 'doc', id: 'docs/project', label: 'Концепция и комплект'},
+    {type: 'doc', id: 'docs/plan', label: 'План работ'},
     {
       type: 'category',
       label: 'Исследования',

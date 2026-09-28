@@ -24,7 +24,7 @@ title: Что уже готово
 
 - порядок работы цилиндров, триггер 60-2 и однозубый датчик фазы;
 - газовые форсунки: расход в г/с и поправка по абсолютному давлению в рампе и температуре газа Lua-скриптом вместо штатной «жидкостной» компенсации;
-- наддув по передачам: в 1-й, 2-й и на нейтрали цель урезана, чтобы беречь трансмиссию и сцепление.
+- наддув по передачам (вариант с наддувом): в 1-й, 2-й и на нейтрали цель урезана, чтобы беречь трансмиссию и сцепление.
 
 Скрипт — `ecu/zil130.lua`, проверка — `lua ecu/zil130_test.lua`. Таблицы опережения, холостой ход и детонацию настраивают на машине по логам.
 
@@ -41,8 +41,10 @@ title: Что уже готово
 | Что | Итог | Подробно |
 |---|---|---|
 | Турбины | Garrett GBC17-250 ×2 или MHI TD04L-13T ×2, по одной на ряд | [research/turbo](/repo/research/turbo) |
-| Форсунки и редуктор | Rail IG7 Dakota LHF или Alex Barracuda 130, редуктор Tomasetto AT12 Super, P&H-драйвер | [research/fuel-system](/repo/research/fuel-system) |
-| ЭБУ | rusEFI Proteus или uaEFI | [ecu/](/repo/ecu/) |
+| Форсунки и редуктор | Rail IG7 Dakota LHF, редуктор Tomasetto AT12 Super, P&H-драйвер | [research/fuel-system](/repo/research/fuel-system) |
+| ЭБУ и зажигание | rusEFI uaEFI121, парная искра на двух модулях ВАЗ 2112-3705010 | [ecu/](/repo/ecu/), [research/ignition](/repo/research/ignition) |
+| Дроссель | ЗМЗ-406 на тросе с РХХ-60 | [research/electronic-throttle](/repo/research/electronic-throttle) |
+| Закупка и смета | Номера, количество и цены по вариантам | [research/parts-list](/repo/research/parts-list) |
 | Клапанные пружины, штанги, кольцо 60-2 | Пружины ЗМЗ-402 или подобранные, замена обязательна | [research/valvetrain](/repo/research/valvetrain) |
 | Радиатор, маслорадиаторы, вискомуфта, электровентиляторы, генератор 150 А, тормозной компрессор | Под наддув в жару нужен теплосъём ×1,5–1,7 | [research/cooling-accessories](/repo/research/cooling-accessories) |
 | Центрифуга масла → полнопоточный фильтр | Низкий переходник, фильтр вынесен на шлангах | [research/lubrication](/repo/research/lubrication) |

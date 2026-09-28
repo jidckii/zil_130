@@ -44,7 +44,7 @@ FLANGE_T, FLANGE_MARGIN = 12.0, 40.0
 HEAD_CENTER = 1.5 * PITCH  # середина между цилиндрами 2–3
 BASE = (Align.CENTER, Align.CENTER, Align.MIN)
 STRAIGHT = 60.0  # прямой участок у фланца: переход окно → круг, штуцер форсунки
-BOSS_AT, BOSS_ANGLE, BOSS_D, BOSS_HOLE = 35.0, 30.0, 14.0, 5.0  # штуцер М6 Valtek: отверстие под метчик
+BOSS_AT, BOSS_ANGLE, BOSS_D, BOSS_HOLE = 35.0, 30.0, 14.0, 5.0  # эскиз; в плите штуцер М8×1 (valley_plate.py)
 
 
 def port_xs(side):

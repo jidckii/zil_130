@@ -6,7 +6,7 @@ const repo = 'https://github.com/jidckii/zil_130';
 // Исследования лежат в корне репозитория, и их копируем в docs-site/repo/.
 // Плагин docs с path: '..' захватил бы и сам docs-site/: его MDX-правило
 // компилировало бы страницы сайта второй раз, и сборка падает.
-const repoDocs = ['docs/plan.md', 'research', 'calc', 'ecu'];
+const repoDocs = ['docs/project.md', 'docs/plan.md', 'research', 'calc', 'ecu'];
 rmSync(new URL('repo/', import.meta.url), {recursive: true, force: true});
 for (const p of repoDocs) {
   cpSync(new URL(`../${p}`, import.meta.url), new URL(`repo/${p}`, import.meta.url), {
