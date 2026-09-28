@@ -45,7 +45,7 @@ title: Что уже готово
 | ЭБУ и зажигание | rusEFI uaEFI121, парная искра на двух модулях ВАЗ 2112-3705010 | [ecu/](/repo/ecu/), [research/ignition](/repo/research/ignition) |
 | Дроссель | ЗМЗ-406 на тросе с РХХ-60 | [research/electronic-throttle](/repo/research/electronic-throttle) |
 | Закупка и смета | Номера, количество и цены по вариантам | [research/parts-list](/repo/research/parts-list) |
-| Клапанные пружины, штанги, кольцо 60-2 | Пружины ЗМЗ-402 или подобранные, замена обязательна | [research/valvetrain](/repo/research/valvetrain) |
+| Клапанные пружины, штанги, кольцо 60-2 | Атмосферный — штатные, отсечка 3200; с наддувом — пары ЗМЗ-402, отсечка 3600 | [research/valvetrain](/repo/research/valvetrain) |
 | Радиатор, маслорадиаторы, вискомуфта, электровентиляторы, генератор 150 А, тормозной компрессор | Под наддув в жару нужен теплосъём ×1,5–1,7 | [research/cooling-accessories](/repo/research/cooling-accessories) |
 | Центрифуга масла → полнопоточный фильтр | Низкий переходник, фильтр вынесен на шлангах | [research/lubrication](/repo/research/lubrication) |
 
