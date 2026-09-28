@@ -33,7 +33,7 @@
 | [docs/](docs/) | Концепция ([project.md](docs/project.md)) и план работ ([plan.md](docs/plan.md)) |
 | [research/](research/) | Исследования: [заводские данные](research/engine-data.md), [чужие переделки](research/prior-art.md), турбины, топливо, зажигание, охлаждение, [комплект и смета](research/parts-list.md) |
 | [calc/](calc/) | Расчёты на Python: воздух, турбины, форсунки, раннеры, детонация — итоги в [results.md](calc/results.md) |
-| [cad/](cad/) | Модели коллектора кодом на build123d, экспорт в STEP/STL и разрезка под 3D-печать |
+| [cad/](cad/) | Модели коллектора кодом на build123d, экспорт в STEP/STL, разрезка под 3D-печать, чертежи для [мастерской](https://jidckii.github.io/zil_130/docs/intake-workshop) |
 | [ecu/](ecu/) | Настройки rusEFI, распиновка, Lua-скрипт с тестом |
 | [docs-site/](docs-site/) | Сайт на Docusaurus |
 
@@ -42,6 +42,7 @@
 ```bash
 uv run python calc/intake_sizing.py   # расчёты → calc/results.md
 uv run python cad/receiver.py         # модель коллектора → cad/out/, падает при нарушении зазоров
+uv run python cad/drawings.py         # чертежи и STEP для мастерской → docs-site/static/
 lua ecu/zil130_test.lua               # проверка Lua-скрипта ЭБУ
 cd docs-site && yarn && yarn start    # сайт локально
 ```

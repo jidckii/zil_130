@@ -8,7 +8,7 @@ from pathlib import Path
 
 from build123d import Box, Circle, Cylinder, Keep, Plane, Pos, Spline, Vector, Wire, export_step, export_stl, sweep
 
-from manifold_skeleton import BASE, PLENUM_VOL, RUNNER_D, STUDS, WALL, flange_point
+from head_flange import BASE, PLENUM_VOL, RUNNER_D, STUDS, WALL, flange_point
 from valley_plate import (EXIT_Y, NECK, SPLIT_Z, build as build_plate, exits, keepout, pad, pad_bolts, seat_rise)
 
 UP_T = 12.0

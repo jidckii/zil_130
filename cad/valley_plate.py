@@ -1,7 +1,7 @@
 """Нижний этаж коллектора ЗИЛ-130/375 — плита развала, пластиковый макет для примерки.
 
 Запуск: uv run python cad/valley_plate.py  → cad/out/valley_plate.{step,stl}, cad/out/keepout.step
-Оси и фланцы головок — из manifold_skeleton.py; опоры развала — research/engine-data.md, раздел 14.
+Оси и фланцы головок — из head_flange.py; опоры развала — research/engine-data.md, раздел 14.
 Верхний этаж (ресивер с раннерами) встаёт на две горизонтальные площадки SPLIT_Z на болтах М8.
 """
 import math
@@ -10,7 +10,7 @@ from pathlib import Path
 from build123d import (Box, Circle, Cylinder, Keep, Plane, Polyline, Pos, RectangleRounded, Spline, Vector, Wire,
                        export_step, export_stl, extrude, loft, make_face, sweep)
 
-from manifold_skeleton import (BASE, FLANGE_T, PITCH, PORT_H, PORT_PITCH, PORT_R, PORT_W, RUNNER_D, STUD_HOLE,
+from head_flange import (BASE, FLANGE_T, PITCH, PORT_H, PORT_PITCH, PORT_R, PORT_W, RUNNER_D, STUD_HOLE,
                                STUDS, WALL, WATER, flange_normal, flange_point)
 
 VALLEY_Z = 306.0  # верх передней площадки и заднего ребра [BD л.2 вид спереди, л.3 И₁–И₁]

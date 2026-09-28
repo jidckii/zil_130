@@ -13,7 +13,7 @@ from build123d import Box, Compound, Cylinder, Plane, Pos, export_stl, section
 
 import receiver
 import valley_plate
-from manifold_skeleton import BASE
+from head_flange import BASE
 
 BED = 250.0  # стол 256 минус поля
 PIN_D, PIN_DEPTH, PIN_WALL = 3.3, 10.0, 1.8  # отверстие под пруток Ø3, глубина в каждую сторону
