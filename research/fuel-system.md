@@ -54,7 +54,7 @@
   - Альтернатива — ратиометрический датчик давления 0–5 В и NTC на рампе; у Valtek есть VK55.PPE.02 (4,7 кОм, M12×1).
   - KME CCT6-D цифровой, rusEFI не прочитает.
 - **P&H-драйвер.** Пиковый ток: Rail на 2 Ом — 5,1 А, Valtek — 4 / 1 А, H2100 — 5,5 / 2,5 А.
-  - [SECU-LZID8](https://secu-3.org/en/versatile-pnh-driver-secu-lzid8/): токи не опубликованы, спросить у автора.
+  - [SECU-LZID8](https://secu-3.org/en/versatile-pnh-driver-secu-lzid8/): ток не измеряет и в амперах не задаётся — время и скважность пика, скважность удержания (`seculzid4.c`); $130, делают в Киеве.
   - FuelTech Peak&Hold PRO: 8 каналов, 2–12 / 0,5–3 А, $449.
   - AEM 30-2710 (4,15 / 1,15 А) снят с производства.
   - Плата с форума rusEFI на LM1949: 4 канала, 8 / 2 А, €40–80 ([форум](https://www.rusefi.com/forum/viewtopic.php?t=2651)).
@@ -85,7 +85,6 @@
 - расход Valtek Type 30;
 - условия замера в паспортах Hana и Barracuda;
 - до какого MAP AT12 держит перепад и где у него предохранительный клапан;
-- токи LZID8;
 - шкала PS-02;
 - цены и наличие в Армении.
 
@@ -113,7 +112,7 @@
 - рампа Rail IG7 Dakota LHF 2 Ом на 4 цил. — **10 950 ₽** ([Интергазсервис](https://intergasservice.ru/catalog/03_komponenty_vpryskovykh_sistem/03_06_rampy_inzhektory_rail/rampa_inzhektornaya_propan_metan_rail_ig7_dakota_alpha_lhf_4_tsilindra_2_om/), наличие «достаточно»), на V8 нужны две;
 - Barracuda 130 — 3 740 ₽ за штуку ([7gas](https://7gas.ru/propan/oborudovanie-1/forsunki/1c-forsunka-130-barracuda));
 - **Tomasetto AT12 Super, метан:** для бортсети ЗИЛ 12 В нужна версия **RMAT3882V** — 8 650 ₽, нет в наличии ([tomasetto.ru](https://tomasetto.ru/catalog/reduktoryi-metan/reduktor-at-12-super)); 24-вольтовая RMAT3884V — 12 000 ₽, в наличии;
-- **rusEFI** ([магазин](https://www.shop.rusefi.com/)): Proteus $800–900, uaEFI $275–449. Через РФ ([wiki](https://wiki.rusefi.com/shop-ru/)): Proteus $550–600, uaEFI $275, СДЭК внутри ЕАЭС без растаможки. AlphaX 8chan не продаётся, есть AlphaECU Gold 8×8 за $1049;
+- **rusEFI** ([магазин](https://www.shop.rusefi.com/)): Proteus $800–900, uaEFI $275–449. Через РФ ([wiki](https://wiki.rusefi.com/shop-ru/)): Proteus $550–600, uaEFI $275, uaEFI121 $375, СДЭК внутри ЕАЭС без растаможки. AlphaX 8chan не продаётся, есть AlphaECU Gold 8×8 за $1049;
 - **ШДК Bosch LSU 4.9** (0 258 017 025): 51 760 AMD, оригинал, СДЭК в Ереван 3 120 AMD ([tachka.ru](https://tachka.ru/bosch/0258017025)).
 
 list.am (Cloudflare), Avito и Ozon посмотреть не удалось — наличие в Ереване проверять вручную.
