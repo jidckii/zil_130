@@ -50,7 +50,7 @@ def turbine_power(curve, k, m_exh, t3, p4):
 
 
 def threshold(curve, k, case, t3):
-    for rpm in range(1000, 3650, 50):
+    for rpm in range(1000, 4050, 50):
         m_air, w_c = engine(rpm=rpm, **case["eng"])
         w_t, _ = turbine_power(curve, k, m_air * case["exh"], t3, case["p4"])
         if w_t >= w_c:
@@ -102,17 +102,17 @@ if __name__ == "__main__":
         curves = dict(TURB)
         curves["ТКР-8,5 (калибр. D73)"] = [(p, f * k) for p, f in TURB["GT2554R 0.64"]]
         print(f"\nT3 = {t3 - 273.15:.0f} °C; ТКР-8,5 ≈ {k:.2f}×GT2554R 0.64 → запирание ≈ {13.9 * k:.1f} lb/min")
-        print(f"{'турбина':24s} | " + " | ".join(f"{b} {h}м {d}" for b in ('6,0', '7,0') for h in (0, 1000, 2000) for d in ('+0,3', '+0,5')))
+        print(f"{'турбина':24s} | " + " | ".join(f"{b} {h}м {d}" for b in ('6,0', '7,0') for h in (0, 1000, 2000, 3000, 4000) for d in ('+0,3', '+0,5')))
         for name, c in curves.items():
             row = []
             for bore in (0.100, 0.108):
-                for h in (0, 1000, 2000):
+                for h in (0, 1000, 2000, 3000, 4000):
                     for boost in (0.3e5, 0.5e5):
                         row.append(threshold(c, 1.0, project_case(bore, h, boost), t3))
-            print(f"{name:24s} | " + " | ".join(f"{r or '>3600':>12}" for r in row))
+            print(f"{name:24s} | " + " | ".join(f"{r or '>4000':>12}" for r in row))
         for name, c in curves.items():
-            wg, p32 = wastegate(c, 1.0, project_case(0.108, 2000, 0.5e5), t3)
+            wg, p32 = wastegate(c, 1.0, project_case(0.108, 4000, 0.5e5), t3)
             wg0, p320 = wastegate(c, 1.0, project_case(0.100, 0, 0.3e5), t3)
-            print(f"  {name:24s} 3600: 7,0 л 2000 м +0,5 — мимо турбины {wg:.0%}, p3/p2 {p32:.2f}; 6,0 л 0 м +0,3 — {wg0:.0%}, p3/p2 {p320:.2f}")
+            print(f"  {name:24s} 3600: 7,0 л 4000 м +0,5 — мимо турбины {wg:.0%}, p3/p2 {p32:.2f}; 6,0 л 0 м +0,3 — {wg0:.0%}, p3/p2 {p320:.2f}")
     assert threshold(TURB["GBC17-250 0.50"], 1.0, project_case(0.100, 0, 0.3e5), 1073.15) < \
            threshold(TURB["GT2554R 0.64"], 1.0, project_case(0.100, 0, 0.3e5), 1073.15)
