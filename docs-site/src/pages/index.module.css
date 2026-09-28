@@ -1,6 +1,10 @@
 .hero {
   padding: 4rem 0;
   text-align: center;
+  color: #fff;
+  /* Голубая кабина и белая облицовка ЗИЛ-130; цвет один в обеих темах */
+  background: linear-gradient(180deg, #3a82c9, #245c97);
+  border-bottom: 8px solid #eef3f8;
 }
 
 .buttons {
@@ -16,7 +20,7 @@
 }
 
 .outline:hover {
-  color: var(--ifm-color-primary-darkest);
+  color: #1e4c7b;
   background: #fff;
 }
 

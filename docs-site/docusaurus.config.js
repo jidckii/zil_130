@@ -100,7 +100,7 @@ export default {
             ],
           },
         ],
-        copyright: 'Открытый некоммерческий проект. Материалы — в репозитории на GitHub.',
+        copyright: `© 2026 Евгений Медведев и участники проекта. Код — MIT, тексты и модели — CC BY 4.0.`,
       },
       prism: {
         theme: prismThemes.github,
