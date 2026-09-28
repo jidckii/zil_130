@@ -32,6 +32,7 @@ IDLE_RPM, IDLE_MAP = 600, 0.35e5
 IDLE_FUEL = 2.09 / 3600 * 43.5 / 50.0  # бензин на ХХ 2,09 кг/ч [D73 дж.225] → метан по теплу, кг/с
 T_RUNNER = 313.15  # воздух в раннере для скорости звука
 K_ENGELMAN = 2.0  # f_Helmholtz / f_поршня на пике момента, эмпирика Энгельмана
+RUNNER_TOTALS = (0.3, 0.5, 0.7, 0.9)  # раннер + канал ГБЦ, м; 0,3 — нынешний ресивер (cad/receiver.py)
 AFR_PETROL = 14.7  # АИ-92/95 без спиртов
 RHO_PETROL = 0.745  # кг/л; ГОСТ Р 51866 допускает 0,720–0,775
 LAMBDA_PETROL = (0.88, 0.80)  # полная нагрузка без наддува / под наддувом: охлаждение заряда и выпуска
@@ -176,14 +177,14 @@ def main():
           f"«цилиндр + раннер», K = {f(K_ENGELMAN, 1)} по Энгельману, воздух {T_RUNNER - 273.15:.0f} °C, ε 8. "
           "При ε 6,5 длины на 6% короче. Скорость — средняя за такт впуска на 3200 об/мин при наполнении 1.\n")
     row("Двигатель", "Ø раннера, мм", *[f"L на {n} об/мин, м" for n in (2000, 2500, 3000)],
-        "Пик при L 0,4 м, об/мин", "Скорость, м/с")
-    row(*["---"] * 7)
+        *[f"Пик при L {f(x, 1)} м, об/мин" for x in RUNNER_TOTALS], "Скорость, м/с")
+    row(*["---"] * (6 + len(RUNNER_TOTALS)))
     piston_speed = 2 * STROKE * 3200 / 60
     for eng, bore in BORES.items():
         for dia in (40e-3, 45e-3, 50e-3):
             lengths = [f(helmholtz_length(bore, dia, n, 8.0)) for n in (2000, 2500, 3000)]
-            peak = 2000 * math.sqrt(helmholtz_length(bore, dia, 2000, 8.0) / 0.4)
-            row(eng, f"{dia * 1e3:.0f}", *lengths, f"{peak:.0f}", f"{(bore / dia) ** 2 * piston_speed:.0f}")
+            peaks = [f"{2000 * math.sqrt(helmholtz_length(bore, dia, 2000, 8.0) / x):.0f}" for x in RUNNER_TOTALS]
+            row(eng, f"{dia * 1e3:.0f}", *lengths, *peaks, f"{(bore / dia) ** 2 * piston_speed:.0f}")
     print()
     for eng, bore in BORES.items():
         vd = displacement(bore) * 1e3
