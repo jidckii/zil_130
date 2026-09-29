@@ -9,6 +9,7 @@
 | [transmission/zil130-manual.md](transmission/zil130-manual.md) | Штатная КПП и главная передача: передаточные числа, скорости по передачам — база для сравнения с автоматами |
 | [transmission/allison-2000.md](transmission/allison-2000.md) | Allison 1000/2000: модели 2100…2550, ближний и широкий ряд, рейтинги, общие передаточные числа с мостами 6,32/6,45/6,97, где стоит |
 | [transmission/zil131-chassis.md](transmission/zil131-chassis.md) | ЗИЛ-131: КПП, раздатка 2,08/1,0, карданы, мосты 7,339, шины, массы; передаточные числа и подъёмы с Allison; чего нет в книгах |
+| [transmission/alternatives.md](transmission/alternatives.md) | Автоматы кроме Allison 2000: отечественные грузовики, Fast Gear, ZF 8HP, GM 6L90, Ford 10R140, Allison 3000/4000 — рейтинг и почему одной коробки нет |
 | [cooling-accessories.md](cooling-accessories.md) | Подбор радиатора, интеркулера, маслорадиатора, вискомуфты, генератора 150 А, тормозного компрессора и осушителя; вход компрессора под наддувом |
 | [lubrication.md](lubrication.md) | Посадка центрифуги, масляные каналы, переходник под фильтр, маслорадиатор |
 | [valvetrain.md](valvetrain.md) | Пружины клапанов под отсечку 3200/3600 об/мин и наддув, штанги, диск 60-2, датчик фазы, rusEFI |
