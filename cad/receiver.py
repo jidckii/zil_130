@@ -115,7 +115,7 @@ def check(part, air, throttle, plate):
         gap = min(part.distance_to(s) for s in k)
         assert gap > 0, f"ресивер задевает: {name}"
         print(f"Зазор до {name}: {gap:.1f} мм")
-    blocked = [t for t in access() if overlap(part + throttle, t) > 1]
+    blocked = [t for t in access() if overlap(part + throttle, t) > 1 or overlap(plate, t) > 1]
     assert not blocked, f"сверху не подлезть в {len(blocked)} местах"
 
 

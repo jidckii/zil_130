@@ -36,6 +36,8 @@ PAD_BOLT = 6.8  # под метчик М8
 SEAT_D = 22.0  # горизонтальная опора гайки М10×1 на вертикальной шпильке
 
 WATER_FRONT = (23.0, 30.0)  # канал головки Ø23 [D73 дж.64] → шланг к термостату
+# Передний штуцер наклонён вперёд на ≈8,5°: круче — канал режет отверстие крайней шпильки и закрывает гайку ключу.
+WATER_FRONT_LEAN = 0.15
 WATER_REAR = (8.0, 12.0)  # как дозирующая вставка Ø8 [D73 дж.65–66]; правый — к компрессору
 NECK = (425.0, 40.0, 36.0, 445.0)  # горловина: X, Y, Ø, верх — за ресивером у ребра; спереди над ней встал бы дроссель
 BREATHER = (-10.0, 30.0, 13.0, 19.0, 360.0)  # сапун: X, Y, Ø канала, Ø штуцера, верх
@@ -106,7 +108,7 @@ def spigot(side, along, across, direction, bore, od, length):
 def water(side):
     n = flange_normal(side)
     (front, c_f), (rear, c_r) = sorted(WATER)
-    fb, fh = spigot(side, front, c_f, n + Vector(-1, 0, 0), *WATER_FRONT, 45)
+    fb, fh = spigot(side, front, c_f, n + Vector(-WATER_FRONT_LEAN, 0, 0), *WATER_FRONT, 45)
     rb, rh = spigot(side, rear, c_r, n, *WATER_REAR, 35)
     return [fb, rb], [fh, rh]
 
@@ -209,6 +211,11 @@ if __name__ == "__main__":
     out.mkdir(exist_ok=True)
     export_step(part, out / "valley_plate.step")
     export_stl(part, out / "valley_plate.stl", tolerance=0.05, angular_tolerance=0.2)
+    for side in (1, -1):
+        _, studs = side_flange(side)
+        _, bores = water(side)
+        gap = min(b.distance_to(h) for b in bores for h in studs)
+        assert gap > 5, f"водяной канал в {gap:.1f} мм от отверстия шпильки"
     ko = keepout()
     export_step(sum(ko[1:], ko[0]), out / "keepout.step")
     bb = part.bounding_box()
