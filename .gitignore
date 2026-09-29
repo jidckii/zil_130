@@ -12,3 +12,4 @@ research/sources/ocr/gas_*.txt
 .claude/settings.local.json
 cad/out/
 .playwright-mcp/
+outbox/
