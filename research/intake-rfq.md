@@ -1,6 +1,6 @@
 # Запрос цены на коллектор: адресаты и ответы
 
-Дата: 2026-09-28. Что изготовить и модели обоих вариантов — страница [«Коллектор: заказ в мастерской»](https://jidckii.github.io/zil_130/docs/intake-workshop) (источник — `docs-site/docs/intake-workshop.md`, модели — `cad/cast.py`, `cad/welded.py`). Способы и прайсы — [intake-manufacturing.md](intake-manufacturing.md).
+Дата: 2026-09-28. Чертежи, модели и требования — страницы [«Коллектор: литьё»](https://jidckii.github.io/zil_130/docs/intake-cast) и [«Коллектор: сварка»](https://jidckii.github.io/zil_130/docs/intake-welded) (модели — `cad/cast.py`, `cad/welded.py`, чертежи — `cad/drawings.py`). Способы и прайсы — [intake-manufacturing.md](intake-manufacturing.md).
 
 Ищем в Каменске-Уральском, Екатеринбурге и по Свердловской области. Просим цену за 1 комплект и за партию 15. Письма отправляет автор проекта, тексты писем в репозиторий не кладём; ответы сводим в таблицу ниже.
 

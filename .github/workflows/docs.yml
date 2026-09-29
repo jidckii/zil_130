@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   # Модели коллектора с проверками зазоров и доступа ключом; падение assert ломает пайплайн.
-  # Чертежи и STEP для сайта пересобираются здесь, чтобы на сайт не попали устаревшие копии из git.
+  # Чертежи, STEP и DXF для сайта собираются только здесь: в git их нет.
   cad:
     runs-on: ubuntu-latest
     steps:
@@ -23,7 +23,7 @@ jobs:
       - uses: astral-sh/setup-uv@v10.2.0
         with:
           enable-cache: true
-      - run: sudo apt-get update -q && sudo apt-get install -y --no-install-recommends fonts-dejavu-core
+      - run: sudo apt-get update -q && sudo apt-get install -y --no-install-recommends fonts-dejavu-core librsvg2-bin
       - run: uv run python cad/valley_plate.py
       - run: uv run python cad/receiver.py
       - run: uv run python cad/cast.py
@@ -32,9 +32,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: drawings
-          path: |
-            docs-site/static/cad/
-            docs-site/static/img/drawings/
+          path: docs-site/static/cad/
 
   build:
     needs: cad
@@ -52,7 +50,7 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           name: drawings
-          path: docs-site/static
+          path: docs-site/static/cad
       - run: yarn install --frozen-lockfile
       - run: yarn build
       - uses: actions/upload-pages-artifact@v5

@@ -33,7 +33,7 @@
 | [docs/](docs/) | Концепция ([project.md](docs/project.md)) и план работ ([plan.md](docs/plan.md)) |
 | [research/](research/) | Исследования: [заводские данные](research/engine-data.md), [чужие переделки](research/prior-art.md), турбины, топливо, зажигание, охлаждение, [комплект и смета](research/parts-list.md) |
 | [calc/](calc/) | Расчёты на Python: воздух, турбины, форсунки, раннеры, детонация — итоги в [results.md](calc/results.md) |
-| [cad/](cad/) | Модели коллектора кодом на build123d, экспорт в STEP/STL, разрезка под 3D-печать, чертежи для [мастерской](https://jidckii.github.io/zil_130/docs/intake-workshop) |
+| [cad/](cad/) | Модели коллектора кодом на build123d, экспорт в STEP/STL, разрезка под 3D-печать, рабочие чертежи по ЕСКД — [литьё](https://jidckii.github.io/zil_130/docs/intake-cast) и [сварка](https://jidckii.github.io/zil_130/docs/intake-welded) |
 | [ecu/](ecu/) | Настройки rusEFI, распиновка, Lua-скрипт с тестом |
 | [docs-site/](docs-site/) | Сайт на Docusaurus |
 

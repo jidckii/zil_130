@@ -1,14 +1,13 @@
 """Литейный вариант коллектора: деталь после обработки и заготовка-отливка для плиты развала и ресивера.
 
 Запуск: uv run python cad/cast.py  → cad/out/cast/{valley_plate,receiver}{,_casting}.step, cast_assembly.step
-и архив docs-site/static/cad/intake-cast-step.zip для страницы мастерской.
+и BRep обработанных деталей для чертежей (drawings.py).
 Геометрия та же, что у макета (valley_plate.py, receiver.py); меняются стенка и припуски. Уклоны не заложены:
 для ЛВМ и печатного песка они не нужны, под ХТС с деревянной оснасткой их добавляет литейка.
 """
-import zipfile
 from pathlib import Path
 
-from build123d import Compound, export_step
+from build123d import Compound, export_brep, export_step
 
 import receiver
 import valley_plate
@@ -34,16 +33,12 @@ def main():
         assert blank.is_valid and len(blank.solids()) == 1, f"{name}: отливка невалидна"
         assert blank.volume > part.volume, f"{name}: у отливки нет припуска"
         export_step(part, out / f"{name}.step")
+        export_brep(part, out / f"{name}.brep")
         export_step(blank, out / f"{name}_casting.step")
         bb = blank.bounding_box()
         print(f"{name}: отливка {bb.size.X:.0f} × {bb.size.Y:.0f} × {bb.size.Z:.0f} мм, "
               f"{blank.volume * DENSITY:.1f} кг, после обработки {part.volume * DENSITY:.1f} кг")
     export_step(Compound([plate, rec]), out / "cast_assembly.step")
-    site = Path(__file__).resolve().parent.parent / "docs-site" / "static" / "cad"
-    site.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(site / "intake-cast-step.zip", "w", zipfile.ZIP_DEFLATED) as z:
-        for f in sorted(out.glob("*.step")):
-            z.write(f, f.name)
 
 
 if __name__ == "__main__":

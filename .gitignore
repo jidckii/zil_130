@@ -11,5 +11,6 @@ research/sources/*.djvu
 research/sources/ocr/gas_*.txt
 .claude/settings.local.json
 cad/out/
+docs-site/static/cad/
 .playwright-mcp/
 outbox/
