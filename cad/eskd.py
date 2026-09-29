@@ -6,7 +6,11 @@ import subprocess
 from pathlib import Path
 
 from build123d import (Align, Circle, Compound, Draft, Edge, ExportSVG, ExtensionLine, LineType, Polyline, Pos,
-                       Rectangle, Rot, Text, Vector, make_face)
+                       Rectangle, Rot, Sketch, Text, Vector, make_face)
+from OCP.BRepLib import BRepLib
+from OCP.gp import gp_Ax1, gp_Ax2, gp_Pnt
+from OCP.HLRAlgo import HLRAlgo_Projector
+from OCP.HLRBRep import HLRBRep_Algo, HLRBRep_HLRToShape
 
 FONT = "DejaVu Sans"
 FORMATS = {"A1": (841.0, 594.0), "A2": (594.0, 420.0), "A3": (420.0, 297.0)}
@@ -14,6 +18,10 @@ CAP = 0.72  # высота прописной DejaVu Sans в долях кегл
 DRAFT = Draft(font_size=3.5 / CAP, font=FONT, display_units=False, arrow_length=3.5, line_width=0.25,
               extension_gap=1.0, pad_around_text=1.0)
 HATCH_STEP = 2.5
+# Рёбра между гранями под меньшим углом — плавный переход, по ГОСТ 2.305 его допускается не показывать. Касательные
+# рёбра моделей идут из BRep без признака гладкости, и без этой разметки HLR выдаёт их как контур: на башенках
+# сварного варианта (ломаная со скруглениями) это десятки линий подряд.
+SMOOTH_ANGLE = math.radians(5)
 
 
 def num(v, digits=1):
@@ -29,7 +37,7 @@ class View:
         self.dir, self.up = Vector(direction).normalized(), Vector(up).normalized()
         self.right = self.dir.cross(self.up)
         self.origin = Vector(at) - self.local(ref) * self.s
-        vis, hid = shape.project_to_viewport(self.dir * -5000, self.up, (0, 0, 0))
+        vis, hid = project(shape, self.dir, self.up)
         sheet.add(self.place(Compound(vis)), "thick")
         if hidden and hid:
             sheet.add(self.place(Compound(hid)), "hidden")
@@ -46,17 +54,40 @@ class View:
         return self.origin + self.local(p) * self.s
 
 
-class Section:
-    """Сечение плоскостью (ГОСТ 2.305): видно со стороны, противоположной нормали плоскости."""
+def project(shape, direction, up):
+    """Удаление невидимых линий: (видимые контур и острые рёбра, невидимые) без линий плавного перехода."""
+    BRepLib.EncodeRegularity_s(shape.wrapped, SMOOTH_ANGLE)
+    algo = HLRBRep_Algo()
+    algo.Add(shape.wrapped)
+    camera = gp_Ax2()
+    camera.SetAxis(gp_Ax1(gp_Pnt(0, 0, 0), (-direction).to_dir()))
+    camera.SetYDirection(up.to_dir())
+    algo.Projector(HLRAlgo_Projector(camera))
+    algo.Update()
+    algo.Hide()
+    out = HLRBRep_HLRToShape(algo)
 
-    def __init__(self, sheet, shape, plane, at, ref):
+    def edges(*compounds):
+        found = [e for c in compounds if not c.IsNull() for e in Compound(c).edges()]
+        for e in found:
+            BRepLib.BuildCurves3d_s(e.wrapped, 1e-4)
+        return found
+
+    return edges(out.VCompound(), out.OutLineVCompound()), edges(out.HCompound(), out.OutLineHCompound())
+
+
+class Section:
+    """Сечение плоскостью (ГОСТ 2.305): видно со стороны, противоположной нормали плоскости.
+    Штриховка одной детали во всех сечениях листа — с одним наклоном (ГОСТ 2.306)."""
+
+    def __init__(self, sheet, shape, plane, at, ref, hatch_angle=45.0):
         self.sheet, self.s, self.plane = sheet, sheet.scale, plane
         self.origin = Vector(at) - self.local(ref) * self.s
         cut = shape & (plane * Rectangle(4000, 4000))
         faces = [self.place(plane.to_local_coords(f)) for f in cut.faces()]
         for f in faces:
             sheet.add(f.edges(), "thick")
-            sheet.add(hatch(f), "thin")
+            sheet.add(hatch(f, angle=hatch_angle), "thin")
         self.box = Compound(faces).bounding_box()
 
     def local(self, p):
@@ -68,6 +99,16 @@ class Section:
 
     def __call__(self, p):
         return self.origin + self.local(p) * self.s
+
+
+def beyond(pa, pb, d, margin):
+    """Области за выносными линиями размера pa–pb, измеряемого вдоль d."""
+    n = Vector(-d.Y, d.X)
+    s0, s1 = sorted((pa.dot(d), pb.dot(d)))
+    t0, t1 = min(pa.dot(n), pb.dot(n)) - margin, max(pa.dot(n), pb.dot(n)) + margin
+    box = lambda a, b: make_face(Polyline(*[d * s + n * t for s, t in ((a, t0), (b, t0), (b, t1), (a, t1))],
+                                          close=True))
+    return Sketch([box(s0 - 100, s0), box(s1, s1 + 100)])
 
 
 def text_width(s, h=3.5):
@@ -89,12 +130,12 @@ def hatch(face, step=HATCH_STEP, angle=45.0):
 
 class Sheet:
     def __init__(self, fmt, name, code, scale, material, mass, sheet=1, sheets=1, org="Проект ЗИЛ-130 V8",
-                 author="Медведев Е."):
+                 author="Медведев Е.", litera="О"):
         self.w, self.h = FORMATS[fmt]
         self.scale = scale
         self.layers = {"thick": [], "thin": [], "fill": [], "hidden": [], "axis": []}
         self.frame()
-        self.title_block(name, code, scale, material, mass, sheet, sheets, org, author)
+        self.title_block(name, code, scale, material, mass, sheet, sheets, org, author, litera)
         self.code = code
 
     def add(self, shapes, layer):
@@ -118,7 +159,7 @@ class Sheet:
         self.rect(0, 0, self.w, self.h)
         self.rect(20, 5, self.w - 5, self.h - 5, "thick")
 
-    def title_block(self, name, code, scale, material, mass, sheet, sheets, org, author):
+    def title_block(self, name, code, scale, material, mass, sheet, sheets, org, author, litera):
         x0, y0 = self.w - 5 - 185, 5.0
         self.tb = (x0, y0)
         T = lambda x, y, s, h=3.5, al=(Align.MIN, Align.CENTER): self.text(s, (x0 + x, y0 + y), h, al)
@@ -128,17 +169,15 @@ class Sheet:
             L((0, y), (65, y), "thick" if y in (30, 35) else "thin")
         for x in (7, 17, 40, 55):
             L((x, 30 if x in (7,) else 0), (x, 55), "thick")
-        L((7, 0), (7, 30), "thin")
         L((65, 0), (65, 55), "thick")
         L((65, 40), (185, 40), "thick")
         L((65, 15), (185, 15), "thick")
         L((135, 0), (135, 40), "thick")
         L((135, 35), (185, 35), "thick")
         L((135, 20), (185, 20), "thick")
-        for x in (140, 145, 150):
+        for x in (140, 145):
             L((x, 20), (x, 35), "thin")
-        L((150, 35), (150, 40), "thick")
-        L((155, 20), (155, 40), "thick")
+        L((150, 20), (150, 40), "thick")
         L((167, 20), (167, 40), "thick")
         L((155, 15), (155, 20), "thin")
         for i, s in enumerate(("Изм.", "Лист", "№ докум.", "Подп.", "Дата")):
@@ -149,9 +188,10 @@ class Sheet:
         T(100, 47.5, code, 7, (Align.CENTER, Align.CENTER))
         for i, s in enumerate(name.split("\n")):
             T(100, 27.5 + 3.5 * (len(name.split("\n")) - 1) - 7 * i, s, 5, (Align.CENTER, Align.CENTER))
-        for s, x in (("Лит.", 145), ("Масса", 161), ("Масштаб", 176)):
+        for s, x in (("Лит.", 142.5), ("Масса", 158.5), ("Масштаб", 176)):
             T(x, 37.5, s, 2.5, (Align.CENTER, Align.CENTER))
-        T(161, 27.5, mass, 3.5, (Align.CENTER, Align.CENTER))
+        T(137.5, 27.5, litera, 3.5, (Align.CENTER, Align.CENTER))
+        T(158.5, 27.5, mass, 3.5, (Align.CENTER, Align.CENTER))
         T(176, 27.5, f"1:{num(scale and 1 / scale)}" if scale < 1 else f"{num(scale)}:1", 3.5, (Align.CENTER, Align.CENTER))
         T(136, 17.5, f"Лист {sheet}", 2.5)
         T(156, 17.5, f"Листов {sheets}", 2.5)
@@ -175,11 +215,22 @@ class Sheet:
     def dim(self, view, a, b, offset, direction=None, label=None, tol="", prefix="", mark=False):
         """offset > 0 — справа по ходу от a к b; direction — (1,0) или (0,1) на листе; mark — «*» к размеру."""
         pa, pb = view(a), view(b)
+        d = Vector(direction) if direction else (pb - pa).normalized()
+        gap = abs((pb - pa).dot(d))
         if label is None:
-            d = Vector(direction) if direction else (pb - pa).normalized()
-            label = num(abs((pb - pa).dot(d)) / self.scale)
+            label = num(gap / self.scale)
         label = prefix + label + tol + ("*" if mark else "")
-        self.add(ExtensionLine([pa, pb], offset, DRAFT, label=label, measurement_direction=direction), "fill")
+        # build123d выбирает место числа по компактности и кладёт его на выносную или стрелку. Штраф за
+        # области за выносными держит число посередине, а не влезающее — уходит на полку выноски (ГОСТ 2.307).
+        cramped = text_width(label) + 2 * DRAFT.pad_around_text + 2 > gap
+        self.add(ExtensionLine([pa, pb], offset, DRAFT, None if cramped else beyond(pa, pb, d, abs(offset) + 10),
+                               label=" " if cramped else label, measurement_direction=direction), "fill")
+        if cramped:
+            t = d if (pb - pa).dot(d) > 0 else -d
+            right = Vector(t.Y, -t.X)
+            m = (pa + pb) / 2
+            mid = m + right * (pa + right * offset - m).dot(right)
+            self.leader(mid, mid + t * (gap / 2 + 4) + right * math.copysign(4, offset), label, arrow=None)
 
     def arrow(self, tip, direction, size=3.5):
         d = Vector(direction).normalized()
@@ -189,20 +240,21 @@ class Sheet:
         self.add(make_face(Polyline(tip, base + n * size / 6, base - n * size / 6, close=True)), "fill")
 
     def leader(self, target, shelf, text, h=3.5, arrow=True, below=None):
-        """Выноска: стрелка (или точка) у target, линия к полке, надпись над полкой; below — строка под полкой."""
+        """Выноска: у target стрелка, точка (arrow=False) или ничего (None — от размерной линии, ГОСТ 2.316);
+        надпись над полкой, below — строка под полкой."""
         target, shelf = Vector(target), Vector(shelf)
         right = shelf.X >= target.X
         bb = self.text(text, (shelf.X + (1 if right else -1), shelf.Y + 1),
                        h, (Align.MIN if right else Align.MAX, Align.MIN))
-        end = Vector(bb.max.X + 1 if right else bb.min.X - 1, shelf.Y)
+        end = Vector(bb.max.X + 2 if right else bb.min.X - 2, shelf.Y)
         if below:
             b2 = self.text(below, (shelf.X + (1 if right else -1), shelf.Y - 1), h,
                            (Align.MIN if right else Align.MAX, Align.MAX))
-            end = Vector(max(end.X, b2.max.X + 1) if right else min(end.X, b2.min.X - 1), shelf.Y)
+            end = Vector(max(end.X, b2.max.X + 2) if right else min(end.X, b2.min.X - 2), shelf.Y)
         self.line(target, shelf, end)
         if arrow:
             self.arrow(target, target - shelf)
-        else:
+        elif arrow is not None:
             self.add(Pos(target.X, target.Y) * Circle(0.6), "fill")
         return end
 
@@ -290,9 +342,13 @@ class Sheet:
         self.add(Polyline(Vector(a), Vector(b)), "axis")
 
     def center(self, p, r):
+        """Центровые линии окружности радиуса r на листе; меньше ⌀12 — сплошные тонкие (ГОСТ 2.303)."""
         p = Vector(p)
-        self.axis(p - Vector(r + 3, 0), p + Vector(r + 3, 0))
-        self.axis(p - Vector(0, r + 3), p + Vector(0, r + 3))
+        for d in (Vector(r + 3, 0), Vector(0, r + 3)):
+            if r < 6:
+                self.line(p - d, p + d)
+            else:
+                self.axis(p - d, p + d)
 
     def caption(self, text, at, h=5.0):
         self.text(text, at, h, (Align.CENTER, Align.MIN))

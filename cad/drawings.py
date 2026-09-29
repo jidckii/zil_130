@@ -11,13 +11,13 @@ import shutil
 import zipfile
 from pathlib import Path
 
-from build123d import Align, Box, Plane, Vector, import_brep
+from build123d import Align, GeomType, Plane, Vector, import_brep
 
 import receiver
 import valley_plate as vp
 from welded import flat_plane
 from eskd import Section, Sheet, View, num, text_width, to_pdf
-from head_flange import (BANK_OFFSET, FLANGE_T, PORT_H, PORT_PITCH, PORT_R, PORT_W, RUNNER_D, STUD_HOLE, STUDS, flange_normal,
+from head_flange import (BANK_OFFSET, PORT_H, PORT_PITCH, PORT_R, PORT_W, RUNNER_D, STUD_HOLE, STUDS, flange_normal,
                          flange_point)
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -27,6 +27,8 @@ OUT = ROOT / "cad" / "out"
 BASE_B = flange_point(1, STUDS[2][0], 0)  # передняя из средних шпилек правого фланца
 BASE_V = flange_point(1, STUDS[3][0], 0)  # задняя
 TILT = 90.0 - math.degrees(math.asin(flange_normal(1).Z))  # плоскость фланца к плоскости разъёма
+# штриховка под 45° легла бы почти вдоль фланца — ГОСТ 2.306 требует тогда 30° или 60°
+PLATE_HATCH = 60.0 if abs(TILT - 45) < 15 else 45.0
 
 # Размеры, взятые с чертежей и промеров сканов, а не с детали: проверяются примеркой макета (docs/plan.md).
 UNVERIFIED = "Размеры, отмеченные *, получены с заводских чертежей двигателя и не проверены на машине. " \
@@ -44,34 +46,47 @@ def plate_holes():
         for i, (a, c) in enumerate(sorted(STUDS), 1):
             p = flange_point(side, a, c)
             top = Vector(p.X, p.Y, p.Z + vp.seat_rise())
-            rows.append((f"Ш{tag}{i}", top, f"⌀{num(STUD_HOLE)} H14 скв., цековка ⌀{num(vp.SEAT_D)}"))
+            rows.append((f"Ш{tag}{i}", top, f"⌀{num(STUD_HOLE)} H14 скв., цековка ⌀{num(vp.SEAT_D)}", vp.SEAT_D / 2))
     for side, tag in ((1, "П"), (-1, "Л")):
         for i, (x, y) in enumerate(sorted(vp.pad_bolts(side)), 1):
-            rows.append((f"Р{tag}{i}", Vector(x, y, vp.SPLIT_Z), "М8-6Н скв."))
-    rows.append(("Ф", Vector(*vp.DOWEL, vp.VALLEY_Z), "⌀8 H12 скв."))
+            rows.append((f"Р{tag}{i}", Vector(x, y, vp.SPLIT_Z), "М8-6Н скв.", 4.0))
+    rows.append(("Ф", Vector(*vp.DOWEL, vp.VALLEY_Z), "⌀8 H12 скв.", 4.0))
     return rows
 
 
 def hole_table(sheet, rows, coords, x0=651.0, y_top=560.0):
-    body = [(name, *(num(c) for c in coords(p)), what) for name, p, what in rows]
+    body = [(name, *(num(c) for c in coords(p)), what) for name, p, what, _ in rows]
     sheet.text("Координаты осей отверстий, мм", (x0 + 85, y_top + 2), 3.5, (Align.CENTER, Align.MIN))
     sheet.table(x0, y_top, [("Обозн.", 14), ("X", 17), ("Y", 17), ("Z", 15), ("Отверстие", 107)], body,
                 head_h=7, row_h=5.5, h=2.5)
 
 
-def hole_tags(sheet, view, rows, dx=4.0, dy=3.0):
-    for name, p, _ in rows:
-        c = view(p)
-        sheet.text(name, (c.X + dx, c.Y + dy), 2.5)
+def hole_marks(sheet, view, rows, outward=False):
+    """Центровые линии и метки отверстий. Метка — слева за контуром (выноски отверстий уходят вправо), снизу
+    или, при outward, с внешней от середины вида стороны: ряды у кромок площадок остаются чистыми."""
+    mid = view.box.center().Y
+    for name, p, _, r in rows:
+        c, r = view(p), r * sheet.scale
+        sheet.center(c, r)
+        up = outward and c.Y > mid
+        sheet.text(name, (c.X - 0.7 * r - 1, c.Y + (1 if up else -1) * (0.7 * r + 0.5)), 2.5,
+                   (Align.MAX, Align.MIN if up else Align.MAX))
+
+
+def rim(sheet, view, p, r, toward):
+    """Точка контура отверстия радиуса r, обращённая к полке выноски: стрелка — на контур, не в центр."""
+    c = view(p)
+    return c + (Vector(toward) - c).normalized() * r * sheet.scale
 
 
 def flange_view(sheet, part, side, at):
-    """Вид на привалочную плоскость фланца со стороны головки; ось X листа — вдоль коленвала."""
-    n = flange_normal(side)
+    """Местный вид на привалочную плоскость фланца со стороны головки; ось X листа — вдоль коленвала.
+    Строится по граням самой плоскости: вырез коробкой оставлял линии среза, которых на детали нет."""
+    n, p0 = flange_normal(side), flange_point(side, 0, 0)
     up = Vector(0, -side * n.Z, side * n.Y) * -1 if side > 0 else Vector(0, -side * n.Z, side * n.Y)
-    face = Plane(flange_point(side, 0, sum(vp.FLANGE_ACROSS) / 2), x_dir=(1, 0, 0), z_dir=n)
-    flange = part & (face * Box(1000, vp.FLANGE_ACROSS[1] - vp.FLANGE_ACROSS[0] + 2, 2 * (FLANGE_T + 3)))
-    return View(sheet, flange, n, up, at, flange_point(side, 0, 0))
+    faces = [f for f in part.faces() if f.geom_type == GeomType.PLANE and f.normal_at().dot(n) < -0.999
+             and abs((f.center() - p0).dot(n)) < 0.5]
+    return View(sheet, faces[0].fuse(*faces[1:]).clean(), n, up, at, p0)
 
 
 PLATE_REQ_CAST = [
@@ -117,17 +132,20 @@ def plate_sheet(part, code, name, material, mass, requirements, sheets=1):
              "Опора на блок", below="Ra 6,3", arrow=True)
 
     holes = plate_holes()
-    hole_tags(s, top, holes)
+    hole_marks(s, top, holes, outward=True)
+    x, y, d, _ = vp.NECK
+    s.center(top(Vector(x, y, 0)), d / 2 * s.scale)
     for p, letter in ((BASE_B, "Б"), (BASE_V, "В")):
         c = top(p)
-        s.datum(c + Vector(-STUD_HOLE / 4, 0), (-1, 1), letter)
+        s.datum(c + Vector(STUD_HOLE / 4, 0), (1, 1), letter)
     s.dim(top, BASE_B, BASE_V, -(hi.Y - BASE_B.Y) * 0.5 - 14, (1, 0), tol=" ±0,1")
     left_b = flange_point(-1, STUDS[2][0], 0)
     s.dim(top, (left_b.X, lo.Y, 0), (BASE_B.X, lo.Y, 0), 10, (1, 0), mark=True, tol=" ±0,2")
     end = s.leader(top(flange_point(1, STUDS[5][0], 0)) + Vector(1.9, 1.9), top(BASE_B) + Vector(150, 22),
                    f"14 отв. ⌀{num(STUD_HOLE)} H14", below=f"цековка ⌀{num(vp.SEAT_D)}, Ra 6,3")
     s.tolerance((end.X, end.Y - 3.5), "pos", "⌀0,5", "АБВ")
-    end = s.leader(top(Vector(*vp.pad_bolts(1)[2], 0)), top(BASE_B) + Vector(150, -85), "12 отв. М8-6Н скв.",
+    shelf = top(BASE_B) + Vector(150, -85)
+    end = s.leader(rim(s, top, Vector(*vp.pad_bolts(1)[2], 0), 3.4, shelf), shelf, "12 отв. М8-6Н скв.",
                    below="фаска 1×45°")
     s.tolerance((end.X, end.Y - 3.5), "pos", "⌀0,3", "АБВ")
     s.leader(top(Vector(*vp.DOWEL, 0)) + Vector(1.4, -1.4), top(Vector(*vp.DOWEL, 0)) + Vector(30, -12),
@@ -138,7 +156,7 @@ def plate_sheet(part, code, name, material, mass, requirements, sheets=1):
     # сечение А–А между шпильками: оба фланца, угол и высота плоскости фланца на оси Б
     xs = 150.0  # между шпильками и каналами обоих рядов
     plane = Plane((xs, 0, 0), x_dir=(0, -1, 0), z_dir=(-1, 0, 0))
-    a = Section(s, part, plane, (505, 310), (xs, 0, 380))
+    a = Section(s, part, plane, (505, 310), (xs, 0, 380), PLATE_HATCH)
     s.cut_mark(main, (xs, 0, hi.Z + 8), (xs, 0, lo.Z - 8), "А", (-1, 0))
     s.caption("А–А", (a.box.center().X, a.box.max.Y + 8))
     p_r, p_l = flange_point(1, 0, 0), flange_point(-1, 0, 0)
@@ -162,7 +180,7 @@ def plate_sheet(part, code, name, material, mass, requirements, sheets=1):
     # сечение Б–Б по оси канала правого ряда: стенка и выход ⌀42 в плоскость разъёма
     port, xc = vp.exits(1)[1]
     plane = Plane((xc, 0, 0), x_dir=(0, -1, 0), z_dir=(-1, 0, 0))
-    b = Section(s, part, plane, (505, 150), (xc, 0, 380))
+    b = Section(s, part, plane, (505, 150), (xc, 0, 380), PLATE_HATCH)
     s.cut_mark(top, (xc, hi.Y + 5, 0), (xc, BASE_B.Y - 60, 0), "Б", (1, 0))
     s.caption("Б–Б", (b.box.center().X, b.box.max.Y + 8))
     z = vp.SPLIT_Z - 8
@@ -174,12 +192,19 @@ def plate_sheet(part, code, name, material, mass, requirements, sheets=1):
     ports = [flange_point(1, pair + d * PORT_PITCH / 2, 0) for pair in (-vp.PITCH, vp.PITCH) for d in (-1, 1)]
     chain = [BASE_B] + ports + [BASE_V]
     for p, q in zip(chain, chain[1:]):
-        s.dim(g, p, q, -(g.box.max.Y - g(p).Y + 8), (1, 0), label=num(abs(q.X - p.X), 2))
+        s.dim(g, p, q, -(g(p).Y - g.box.min.Y + 8), (1, 0), label=num(abs(q.X - p.X), 2))
     w = flange_point(1, 0, PORT_H / 2) - flange_point(1, 0, 0)
     s.dim(g, ports[0] + w, ports[0] - w, 10, (0, 1))
     u = flange_point(1, PORT_W / 2, 0) - flange_point(1, 0, 0)
-    s.dim(g, ports[1] - u - w, ports[1] + u - w, g(ports[1]).Y - g.box.min.Y + 8, (1, 0))
-    s.leader(g(ports[2] + w * 0.6 + u), (g.box.max.X + 5, g.box.min.Y - 10), f"8 окон R{num(PORT_R)}",
+    s.dim(g, ports[1] - u - w, ports[1] + u - w, g.box.max.Y + 8 - g(ports[1] - w).Y, (1, 0))
+    s.axis(g(BASE_B) - Vector(8, 0), g(BASE_V) + Vector(8, 0))
+    for p in ports:
+        s.axis(g(p + w) + Vector(0, 3), g(p - w) - Vector(0, 3))
+    for along, across in STUDS:
+        s.center(g(flange_point(1, along, across)), STUD_HOLE / 2 / abs(flange_normal(1).Z) * s.scale)
+    for (along, across), (bore, _) in zip(sorted(vp.WATER), (vp.WATER_FRONT, vp.WATER_REAR)):
+        s.center(g(flange_point(1, along, across)), bore / 2 * s.scale)
+    s.leader(g(ports[2] + w * 0.6 + u), (g.box.max.X + 5, g.box.min.Y - 10), f"4 окна R{num(PORT_R)}",
              below="ось окон — по линии Б–В")
     for side in (-1,):
         port, x = vp.exits(side)[2]
@@ -192,7 +217,7 @@ def plate_sheet(part, code, name, material, mass, requirements, sheets=1):
         s.leader(top(rb.center()), top(rb.center()) + Vector(15, -38), f"⌀{num(vp.WATER_REAR[1])}, проход "
                  f"⌀{num(vp.WATER_REAR[0])}", below="2 штуцера воды")
     bx, by, bd, bod, _ = vp.BREATHER
-    s.leader(top(Vector(bx, by, 0)), top(Vector(bx, by, 0)) + Vector(35, -38), f"⌀{num(bod)}, проход ⌀{num(bd)}",
+    s.leader(top(Vector(bx, by, 0)), top(Vector(bx, by, 0)) + Vector(35, -8), f"⌀{num(bod)}, проход ⌀{num(bd)}",
              below="штуцер сапуна")
     hole_table(s, plate_holes(), xyz)
     s.requirements([r.format(tilt=num(TILT), offset=num(BANK_OFFSET)) for r in requirements])
@@ -213,11 +238,12 @@ def receiver_holes(wall):
     rows = []
     for side, tag in ((1, "П"), (-1, "Л")):
         for i, (x, y) in enumerate(sorted(vp.pad_bolts(side)), 1):
-            rows.append((f"Р{tag}{i}", Vector(x, y, vp.SPLIT_Z), f"⌀{num(receiver.BOLT_CLEAR)} H14 скв."))
+            rows.append((f"Р{tag}{i}", Vector(x, y, vp.SPLIT_Z), f"⌀{num(receiver.BOLT_CLEAR)} H14 скв.",
+                         receiver.BOLT_CLEAR / 2))
     threads = {"ДАД": "М12×1,5-6Н", "ДТВ": "М12×1,5-6Н", "газовый редуктор": "М12×1,5-6Н", "РХХ": "М22×1,5-6Н",
                "картерные газы": "М12×1,5-6Н"}
-    for i, (name, (x, y, _)) in enumerate(receiver.PORTS.items(), 1):
-        rows.append((f"Т{i}", Vector(x0 + x, y, top + 10), f"{threads[name]} скв., {name}"))
+    for i, (name, (x, y, tap)) in enumerate(receiver.PORTS.items(), 1):
+        rows.append((f"Т{i}", Vector(x0 + x, y, top + 10), f"{threads[name]} скв., {name}", tap / 2 + 6))
     return rows
 
 
@@ -239,15 +265,17 @@ def receiver_sheet(part, code, name, material, mass, wall, requirements, sheets=
     s.roughness(main(bottom + Vector(160, 0, 0)), "Ra 3,2", 180)
 
     holes = receiver_holes(wall)
-    hole_tags(s, top, holes)
+    hole_marks(s, top, holes)
     for p, letter in ((REC_B, "Б"), (REC_V, "В")):
         s.datum(top(p) + Vector(-1.6, 1.6), (-1, 1), letter)
     s.dim(top, REC_B, REC_V, -(hi.Y - REC_B.Y) * 0.5 - 14, (1, 0), tol=" ±0,1")
-    end = s.leader(top(Vector(*sorted(vp.pad_bolts(1))[3], 0)), top(REC_B) + Vector(150, 25),
+    shelf = top(REC_B) + Vector(150, 40)
+    end = s.leader(rim(s, top, Vector(*sorted(vp.pad_bolts(1))[3], 0), receiver.BOLT_CLEAR / 2, shelf), shelf,
                    f"12 отв. ⌀{num(receiver.BOLT_CLEAR)} H14", below="Ra 12,5")
     s.tolerance((end.X, end.Y - 3.5), "pos", "⌀0,3", "АБВ")
     t1 = holes[12][1]
-    end = s.leader(top(t1), top(REC_B) + Vector(60, -150), "4 отв. М12×1,5-6Н",
+    shelf = top(REC_B) + Vector(60, -150)
+    end = s.leader(rim(s, top, t1, 5.1, shelf), shelf, "4 отв. М12×1,5-6Н",
                    below="1 отв. М22×1,5-6Н (Т4)")
     s.tolerance((end.X, end.Y - 3.5), "pos", "⌀0,5", "АБВ")
 
@@ -257,12 +285,16 @@ def receiver_sheet(part, code, name, material, mass, wall, requirements, sheets=
     face_x = x0 - receiver.THROTTLE_PAD_T
     c = Vector(face_x, 0, zc)
     s.center(left(c), receiver.THROTTLE_OPENING / 4)
+    bolts = [Vector(face_x, dy, zc + dz) for dy in (-half, half) for dz in (-half, half)]
+    for p in bolts:
+        s.center(left(p), 4 * s.scale)
     s.dim(left, (face_x, half, zc + half), (face_x, -half, zc + half), -(hi.Z - zc - half) * 0.5 - 10, (1, 0))
-    s.dim(left, (face_x, -half, zc - half), (face_x, -half, zc + half), -(hi.Y - half) * 0.5 - 30, (0, 1))
+    s.dim(left, (face_x, -half, zc - half), (face_x, -half, zc + half), (hi.Y - half) * 0.5 + 10, (0, 1))
     s.dim(left, (face_x, 0, vp.SPLIT_Z), (face_x, 0, zc), -((hi.Y) * 0.5 + 12), (0, 1), tol=" ±0,3")
     s.leader(left(c + Vector(0, receiver.THROTTLE_OPENING / 2, 0)), left(c) + Vector(-40, -42),
              f"⌀{num(receiver.THROTTLE_OPENING)} +0,5", below="окно дросселя")
-    end = s.leader(left(c + Vector(0, half, half)), left(c) + Vector(55, 45), "4 отв. М8-6Н скв.",
+    shelf = left(c) + Vector(55, 45)
+    end = s.leader(rim(s, left, c + Vector(0, half, half), 4, shelf), shelf, "4 отв. М8-6Н скв.",
                    below="фаска 1×45°")
     s.tolerance((end.X, end.Y - 3.5), "pos", "⌀0,3", "А")
     s.dim(main, (face_x, 0, lo.Z), REC_B + Vector(0, -REC_B.Y, 0), 22, (1, 0), tol=" ±0,3")
@@ -363,9 +395,9 @@ def composition_sheet(assembly, items, pieces, welds, code, name, mass):
     right = sorted([m for m in marks if m[0].X >= iso.box.center().X], key=lambda m: -m[0].Y)
     for group, x in ((left, iso.box.min.X - 30), (right, iso.box.max.X + 20)):
         y0, y1 = iso.box.max.Y + 10, iso.box.min.Y - 10
-        for k, (target, label) in enumerate(group):
-            y = y0 - (y0 - y1) * (k + 0.5) / max(len(group), 1)
-            s.balloon(target, (x, y), label)
+        slots = [Vector(x, y0 - (y0 - y1) * (k + 0.5) / max(len(group), 1)) for k in range(len(group))]
+        for (target, label), at in zip(group, untangle([t for t, _ in group], slots)):
+            s.balloon(target, at, label)
     rows = [(str(it["pos"]), it["name"], str(it["qty"]), it["blank"], it["note"]) for it in items]
     s.text("Спецификация", (651 + 92, 575 + 2), 3.5, (Align.CENTER, Align.MIN))
     s.table(651, 575, [("Поз.", 8), ("Наименование", 55), ("Кол.", 8), ("Заготовка", 56), ("Примечание", 58)],
@@ -376,6 +408,26 @@ def composition_sheet(assembly, items, pieces, welds, code, name, mass):
         items[0]["stem"].rsplit("-", 1)[0]), "Массы деталей и заготовки — в спецификации; катеты швов — не менее "
         "указанных."])
     return s
+
+
+def crosses(a, b, c, d):
+    side = lambda p, q, r: (q - p).cross(r - p).Z
+    return side(a, b, c) * side(a, b, d) < 0 and side(c, d, a) * side(c, d, b) < 0
+
+
+def untangle(targets, slots):
+    """Выноски позиций не пересекаются (ГОСТ 2.109): меняем местами полки у пересекающихся пар.
+    Каждый обмен укорачивает суммарную длину выносок, поэтому цикл конечен."""
+    slots = list(slots)
+    tangled = True
+    while tangled:
+        tangled = False
+        for i in range(len(targets)):
+            for j in range(i + 1, len(targets)):
+                if crosses(targets[i], slots[i], targets[j], slots[j]):
+                    slots[i], slots[j] = slots[j], slots[i]
+                    tangled = True
+    return slots
 
 
 def details_sheet(items, pieces, code, name, scale=0.5):
