@@ -36,7 +36,7 @@ lua ecu/zil130_test.lua                   # тест Lua-скрипта rusEFI
 ## Что лежит не в git
 
 - `cad/out/` — STEP, STL и картинки. Они всегда собираются из скриптов.
-- Сканы заводских книг (DjVu, PDF) — тяжёлые. В git лежит их текст (`research/sources/ocr/*.txt`) и вырезанные страницы с чертежами (`research/sources/figures/`). Откуда скачать сами книги, сказано в [заводских данных](/repo/research/engine-data), раздел 9.
+- Сканы заводских книг (DjVu, PDF) — тяжёлые. В git лежит их текст (`research/sources/ocr/*.txt`) и вырезанные страницы с чертежами (`research/sources/figures/`). Сами книги скачиваются по прямым ссылкам из [библиотеки источников](/repo/research/sources).
 
 ## Сайт
 

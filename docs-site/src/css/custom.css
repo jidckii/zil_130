@@ -24,3 +24,7 @@
   background: #fff;
   border-radius: 6px;
 }
+
+.markdown td img {
+  max-width: 180px;
+}

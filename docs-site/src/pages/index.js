@@ -11,13 +11,13 @@ export default function Home() {
   return (
     <Layout
       title="Открытый проект"
-      description="Повторяемый перевод V8 ЗИЛ-130 и ЗИЛ-131 с карбюратора на распределённый впрыск, с турбонаддувом и без">
+      description="Повторяемый перевод V8 ЗИЛ-130 и ЗИЛ-131 на распределённый впрыск метана, с турбонаддувом и без">
       <header className={clsx('hero hero--primary', styles.hero)}>
         <div className="container">
-          <h1 className="hero__title">ЗИЛ-130 и ЗИЛ-131 на впрыске</h1>
+          <h1 className="hero__title">НеоЗИЛ</h1>
           <p className="hero__subtitle">
-            Открытый проект: повторяемый перевод V8 ЗИЛ с карбюратора на распределённый
-            впрыск — с турбонаддувом и без
+            Открытый проект: повторяемый перевод V8 ЗИЛ-130 и ЗИЛ-131 на распределённый
+            впрыск метана — с турбонаддувом и без
           </p>
           <div className={styles.buttons}>
             <Link className="button button--secondary button--lg" to="/docs/intro">

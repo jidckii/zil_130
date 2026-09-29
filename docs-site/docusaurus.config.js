@@ -1,5 +1,6 @@
-import {cpSync, rmSync} from 'node:fs';
+import {cpSync, globSync, rmSync} from 'node:fs';
 import {themes as prismThemes} from 'prism-react-renderer';
+import repoSidebar from './sidebarsRepo.js';
 
 const repo = 'https://github.com/jidckii/zil_130';
 
@@ -11,14 +12,25 @@ rmSync(new URL('repo/', import.meta.url), {recursive: true, force: true});
 for (const p of repoDocs) {
   cpSync(new URL(`../${p}`, import.meta.url), new URL(`repo/${p}`, import.meta.url), {
     recursive: true,
-    filter: (src) => !/\.\w+$/.test(src) || /\.(md|lua)$/.test(src),
+    // Купленные чертежи раздаём с сайта: превью и оригиналы.
+    filter: (src) => !/\.\w+$/.test(src) || /\.(md|lua)$/.test(src) || src.includes('/research/sources/drawings/'),
   });
+}
+
+// Страницы, которые публикуются по прямой ссылке, но в меню не выводятся.
+const repoHidden = [];
+const inSidebar = new Set(JSON.stringify(repoSidebar).match(/[\w/-]+(?=")/g));
+const orphans = globSync('**/*.md', {cwd: new URL('repo/', import.meta.url)})
+  .map((f) => f.replace(/\.md$/, ''))
+  .filter((id) => !inSidebar.has(id) && !repoHidden.includes(id));
+if (orphans.length) {
+  throw new Error(`Not in sidebarsRepo.js or repoHidden: ${orphans.join(', ')}`);
 }
 
 /** @type {import('@docusaurus/types').Config} */
 export default {
-  title: 'ЗИЛ-130 на впрыске',
-  tagline: 'Открытый проект перевода V8 ЗИЛ-130 и ЗИЛ-131 на распределённый впрыск',
+  title: 'НеоЗИЛ',
+  tagline: 'Открытый проект перевода V8 ЗИЛ-130 и ЗИЛ-131 на распределённый впрыск метана',
   url: 'https://jidckii.github.io',
   baseUrl: '/zil_130/',
   organizationName: 'jidckii',
@@ -72,10 +84,11 @@ export default {
       image: 'img/renders/intake-iso-front.png',
       colorMode: {respectPrefersColorScheme: true},
       navbar: {
-        title: 'ЗИЛ-130 · впрыск',
+        title: 'НеоЗИЛ',
         items: [
           {type: 'docSidebar', sidebarId: 'defaultSidebar', label: 'Документация', position: 'left'},
           {type: 'docSidebar', sidebarId: 'repo', docsPluginId: 'repo', label: 'Исследования и расчёты', position: 'left'},
+          {to: '/repo/research/sources', label: 'Библиотека', position: 'left'},
           {to: '/docs/contributing', label: 'Как помочь', position: 'left'},
           {href: repo, label: 'GitHub', position: 'right'},
         ],

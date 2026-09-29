@@ -45,7 +45,7 @@
 
 | Что | Номер | Кол. | Цена, $ | Статус | Где подробно |
 |---|---|---|---|---|---|
-| Плита развала и ресивер | `cad/valley_plate.py`, `cad/receiver.py`, алюминий 13–15 кг | 1 компл. | 535–1 600 | модель готова, способ не выбран | [intake-manufacturing.md](intake-manufacturing.md) |
+| Плита развала и ресивер | `cad/valley_plate.py`, `cad/receiver.py`, алюминий 13–15 кг | 1 компл. | 530–1 600 | модель готова, способ не выбран | [intake-manufacturing.md](intake-manufacturing.md) |
 | Дроссель с ДПДЗ | ЗМЗ-406 **4062.1148100-02** | 1 | 57 | выбрано | [electronic-throttle.md](electronic-throttle.md) |
 | РХХ | РХХ-60 406.1147051-02 = Bosch 0 280 140 545 | 1 | 22–51 | выбрано | [electronic-throttle.md](electronic-throttle.md) |
 | Трос и качалка | трос 3110-1108050 + качалка на тяге ЗИЛ | 1 | 1–4 ([b2motor](https://b2motor.ru/catalog/gaz/zmz406/6109)) + ≈12 | класс; качалка по месту | [../docs/plan.md](../docs/plan.md) |
