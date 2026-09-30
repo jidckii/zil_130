@@ -30,7 +30,7 @@ if (orphans.length) {
 /** @type {import('@docusaurus/types').Config} */
 export default {
   title: 'НеоЗИЛ',
-  tagline: 'Открытый проект перевода V8 ЗИЛ-130 и ЗИЛ-131 на распределённый впрыск метана',
+  tagline: 'Проект-исследование по комплексной модернизации ЗИЛ-130 и ЗИЛ-131',
   url: 'https://jidckii.github.io',
   baseUrl: '/zil_130/',
   organizationName: 'jidckii',

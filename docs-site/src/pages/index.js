@@ -10,14 +10,13 @@ export default function Home() {
   const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
-      title="Открытый проект"
-      description="Повторяемый перевод V8 ЗИЛ-130 и ЗИЛ-131 на распределённый впрыск метана, с турбонаддувом и без">
+      title="Модернизация ЗИЛ-130 и ЗИЛ-131"
+      description="Проект-исследование по комплексной модернизации ЗИЛ-130 и ЗИЛ-131: двигатель, коробка передач и другие узлы">
       <header className={clsx('hero hero--primary', styles.hero)}>
         <div className="container">
           <h1 className="hero__title">НеоЗИЛ</h1>
           <p className="hero__subtitle">
-            Открытый проект: повторяемый перевод V8 ЗИЛ-130 и ЗИЛ-131 на распределённый
-            впрыск метана — с турбонаддувом и без
+            Проект-исследование по комплексной модернизации ЗИЛ-130 и ЗИЛ-131
           </p>
           <div className={styles.buttons}>
             <Link className="button button--secondary button--lg" to="/docs/intro">
