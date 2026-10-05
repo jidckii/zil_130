@@ -28,6 +28,7 @@ export default {
         'research/transmission/allison-2000',
         'research/transmission/alternatives',
       ]),
+      cat('Вики: модификации', ['research/wiki/zil130', 'research/wiki/zil131']),
       cat('Опыт сообщества', ['research/prior-art', 'research/videos/notes']),
       cat('Библиотека источников', ['research/sources/drawings/README'], {link: {type: 'doc', id: 'research/sources/README'}}),
     ], {link: {type: 'doc', id: 'research/README'}}),
