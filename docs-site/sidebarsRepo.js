@@ -26,6 +26,8 @@ export default {
         'research/transmission/zil130-manual',
         'research/transmission/zil131-chassis',
         'research/transmission/allison-2000',
+        'research/transmission/allison-3000',
+        'research/transmission/allison-lineup',
         'research/transmission/alternatives',
       ]),
       cat('Вики: модификации', ['research/wiki/zil130', 'research/wiki/zil131']),
