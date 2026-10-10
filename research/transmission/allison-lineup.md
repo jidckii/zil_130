@@ -123,6 +123,13 @@
 **Рынок и риски**
 - Б/у 9-Speed не нашли ни на eBay, ни на truckpaper, ни на car-part.com. Для сравнения, б/у 2500 RDS стоит $2799.
 - Отзывов и бюллетеней по самой 9-Speed нет. По блокам 6-го поколения были отзывы из-за ПО: 23E-056 по пожарным машинам, перепрошивка на Freightliner [RCL23].
+- **Турция.** Завода Allison в Турции нет. 9-Speed делают в Индианаполисе [FO17], массовые коробки — ещё в Ченнаи и Сентготхарде [10K25].
+  - На турецкие автобусы Otokar Navigo идут, судя по рейтингу «до 895 Н·м» и списку моделей, исполнения T 2906 / T 2916: близкий ряд, 660 lb-ft [OM9 стр.2], [AT24]. Модель коробки в Navigo нигде прямо не названа, это оценка.
+  - Широкого ряда 2959/2969 вне Северной Америки в документах нет.
+  - Дистрибьютор в Турции — Drive Line Systems Turkey, сервис — Bilmak (Газиантеп, Анкара) [AT21]. Цен на новую коробку и правил продажи частникам не нашли. sahibinden.com и n11 закрыты от автоматического поиска.
+- **Вывоз.** Allison прекратила продажи в РФ и Беларусь на неопределённый срок [10K25].
+  - По правилам экспорта США коробки (HS 8708 40) входят в Supplement 4 to Part 746. Реэкспорт в РФ из любой страны требует лицензии BIS, а такие заявки получают отказ по политике [EAR746].
+  - В Армению ограничений по Part 746 нет. Но Армения и Турция названы в совместном предупреждении DOJ/BIS/OFAC как точки перевалки в РФ [TRI23], поэтому дилер, скорее всего, попросит документы о конечном пользователе (оценка).
 - **Вывод.** Технически коробка подходит лучше всех, но достать её сейчас можно только новой через дилера, и калибровка у неё закрыта. Пока это вариант на будущее.
 
 ## Не проверено
@@ -158,3 +165,9 @@
 | SIL20 | калибровка по серийному номеру TCM | [nhtsa](https://static.nhtsa.gov/odi/tsbs/2020/MC-10171370-9999.pdf) |
 | RCL23 | отзыв 23E-056, TCM 6-го поколения | [nhtsa](https://static.nhtsa.gov/odi/rcl/2023/RCLRPT-23E056-7656.PDF) |
 | MIT | TCM 29562548, цена | [mitchells.co.uk](https://www.mitchells.co.uk/products/29562548/) |
+| FO17 | FleetOwner, производство 9-Speed в Индианаполисе, 2017 | [fleetowner](https://fleetowner.com/equipment/article/21701354/allison-plans-new-nine-speed-automatic-transmission) |
+| 10K25 | Allison, годовой отчёт 10-K за 2025 | [sec.gov](https://www.sec.gov/Archives/edgar/data/1411207/000119312526065627/alsn-20251231.htm) |
+| AT24 | Allison, 9-Speed на Busworld Türkiye, 2024 | [allisontransmission.com](https://allisontransmission.com/newsroom/article/2024/06/24/allison-transmission-to-present-latest-technologies-at-busworld-türkiye) |
+| AT21 | Allison, сервисная сеть в Турции, 2021 | [allisontransmission.com](https://pprod.allisontransmission.com/company/news-article/2021/09/28/allison-transmission-extends-its-after-sales-service-network-in-turkey) |
+| EAR746 | 15 CFR 746.8 и Supplement 4 | [ecfr.gov](https://www.ecfr.gov/current/title-15/subtitle-B/chapter-VII/subchapter-C/part-746) |
+| TRI23 | DOJ/BIS/OFAC Tri-Seal Note, 2023 | [justice.gov](https://www.justice.gov/file/1571336/download) |
