@@ -25,6 +25,7 @@
 
 **Общее для серии** [V26 стр.7–9], [A3000]:
 - обороты двигателя на полной нагрузке 1900–2800 (в 2010 году было 2000–2800), холостой ход в D 500–800, на выходном валу не больше 3600 об/мин. С мостом 6,32 это ~102 км/ч;
+- с 2024 года есть исполнение Governed Speed Uprate: до 3200 об/мин двигателя на I–IV передачах, с серийного номера 6512022321 [GSU]. Для атмосферного мотора это снимает часть потерь от предела 2800;
 - момент на входе: у 3000 RDS 1491 Н·м, у 3500 RDS 1166 Н·м, с ограничением момента на III–VI передачах больше. Нашим 490–580 Н·м хватает с двукратным запасом;
 - картер только SAE №2. Длина 719 мм, масса сухой коробки 243 кг: со штатной механикой (105 кг) разница +138 кг. Отбор мощности на 4 или 8 часов, 660 Н·м; встроенный ретардер — опция;
 - допуска Allison под бензиновые двигатели у 3000 нет, как нет и запрета. С газовыми работает серийно: Cummins L9N, 2200 об/мин, на мусоровозах Mack [MACK].
@@ -122,3 +123,4 @@
 | SK1 | форум skoolie, TCM и калибровки — **вторичный** | [skoolie](https://www.skoolie.net/goto/post?id=7708556), [2](https://www.skoolie.net/goto/post?id=7723517) |
 | DR1–DR3 | baza.drom.ru: allison 3000 / 3200 / 3700 | [3000](https://baza.drom.ru/sell_spare_parts/?query=allison+3000), [3200](https://baza.drom.ru/sell_spare_parts/?query=allison+3200), [3700](https://baza.drom.ru/sell_spare_parts/?query=allison+3700) |
 | TP | truckpaper / rvuniverse | [3000PTS](https://www.truckpaper.com/listing/for-sale/245315469/allison-3000pts-transmission), [MD3060R](https://www.truckpaper.com/listing/for-sale/258084217/allison-md3060r-transmission), [MD3066](https://www.rvuniverse.com/listing/for-sale/224532167/allison-md3066-transmission) |
+| GSU | Allison SIL 03-WT-24, Governed Speed Uprate для 3000 | [nhtsa](https://static.nhtsa.gov/odi/tsbs/2024/MC-11003803-0001.pdf) |
