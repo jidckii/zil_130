@@ -103,6 +103,44 @@
 
 **Импортные раздатки за автоматом** — NP205 (~1,96), NP241 / NV271 / NV273 (~2,72), Atlas (3,8). Числа по памяти, не проверены. В РФ по разумной цене их нет, РК ЗИЛ-131 проще.
 
+## Японский и корейский рынок
+
+Дата: 2026-10-10. Цены — baza.drom.ru на эту дату. Общее на 1-й — с мостом 6,32 / 6,97.
+
+**Вывод.** Нового кандидата, который проходит все критерии, нет.
+- Гидромеханические автоматы японских среднетоннажников — это Allison: Isuzu Forward, Nissan Condor, Fuso Fighter, Hino Ranger [BCW]. У Hyundai Mighty — Allison 1000xFE [ALL-KR]. Япония для нас — ещё один канал б/у Allison.
+- Японские роботы подходят по ряду передач, но не по моменту и управлению.
+
+| Коробка | Где стоит | 1-я / высшая | Общее на 1-й | Момент | Управление | Цена | Вердикт |
+|---|---|---|---|---|---|---|---|
+| Fuso DUONIC M038S6 (робот, два мокрых сцепления) | Canter с 2010 г. | 5,397 / 0,701 [FNZ816] | 34,1 / 37,6 | стоит за 4P10, до 430 Н·м [CW16] | свой блок коробки, согласуется с ЭБУ двигателя по CAN, протокол закрыт | коробка 63 000 ₽, блок 6 840 ₽ [DROM-M038] | момент, управление |
+| Isuzu MYY6S/MYY6E (робот Smoother; есть и механика) | Elf / NPR / NQR | 5,979 / 0,759 [ISZ-AU] | 37,8 / 41,7 | стоит за 4HK1, 402 Н·м [ISZ-AU] | то же | 150 000 ₽, Владивосток [DROM-MYY6] | момент, управление |
+| Hino ProShift (робот) | Ranger, Dutro | механика FC: ~6,10 / 0,74 [HINO-FC] | ~38,6 / 42,5 | дизели до 440 Н·м [DYNA-D] | закрытое | — | момент, управление |
+| Toyota/Aisin A860E, Aisin A46x (автомат) | Dyna, Elf | 3,742 / 0,634 [DYNA-D] | 23,6 / 26,1 | 440 Н·м | общий блок Toyota или свой блок | — | мелкая 1-я |
+| **Toyota/Aisin AB60F + раздатка LC200** | Land Cruiser 200, Tundra | 3,333 / 0,588, ГДТ 1,80 [AB60-SM] | 21,1 / 23,2; с понижающей ~55 / ~61 | 650 Н·м за 1VD-FTV [WIKI-VD] | общий блок двигателя и коробки Toyota; отдельного блока нет, rusEFI коробки Aisin не ведёт [RUSEFI] | 76 000–250 000 ₽, с раздаткой 173 000 ₽ [DROM-AB60] | условно: всё упирается в управление |
+| Aisin AA80E (8-ст.) | Lexus, китайские пикапы | 4,596 / ~0,69 | 29,0 / 32,0 | ~500 Н·м (вт.) | общий блок Toyota | — | момент, управление |
+
+По AB60F:
+- масса коробки 107 кг с маслом [AB60-SM], раздатки — ~40–50 кг (оценка);
+- раздатка постоянного полного привода с межосевым дифференциалом. На заднеприводном ЗИЛе её придётся держать заблокированной;
+- передаточное число понижающей ~2,618 — по памяти, не проверено;
+- на срыве ГДТ на кардан приходит ~5,2 кН·м, как у Allison 2500 с РК ЗИЛ-131 (расчёт);
+- работа на 9,5 т не подтверждена.
+
+| Код | Что | Ссылка |
+|---|---|---|
+| FNZ816 | Fuso NZ, Canter 816 | [fuso.co.nz](https://www.fuso.co.nz/file/4875) |
+| CW16 | Car Watch, DUONIC 2.0 | [impress.co.jp](https://car.watch.impress.co.jp/docs/news/20160503_756017.html) |
+| ISZ-AU | Isuzu Australia, N-Series | [imagekit](https://ik.imagekit.io/isuzu/spec-sheet/trucks/range-brochures/20916904_IS_N-SERIES_A4-SPEC-BOOKLET_LR.pdf) |
+| DYNA-D | Toyota Dyna Dump, 2019 | [toyota.jp](https://toyota.jp/pages/contents/dynadump/008_b_009/pdf/spec/dynadump_spec_201904.pdf) |
+| HINO-FC | Hino NZ FC 1124 | [hino.co.nz](https://hino.co.nz/wp-content/uploads/fc-1124-manual-models.pdf) |
+| AB60-SM | выдержка из сервисного руководства AB60F — **вторичный** | [scribd](https://es.scribd.com/document/243271067/6-Speed-Tranny) |
+| WIKI-VD | Toyota 1VD-FTV — **вторичный** | [wikipedia](https://en.wikipedia.org/wiki/Toyota_VD_engine) |
+| RUSEFI | rusEFI, управление коробками | [wiki.rusefi.com](https://wiki.rusefi.com/Transmission-Control/) |
+| BCW | bestcarweb, Allison в японских грузовиках — **вторичный** | [bestcarweb](https://bestcarweb.jp/news/448733) |
+| ALL-KR | Allison Korea, Hyundai Mighty | [allisontransmission.com](https://allisontransmission.com/ko-kr/company/news-article/2020/05/29/앨리슨-변속기-장착한-현대-마이티-오토-트럭-호주-판매-시작) |
+| DROM-* | baza.drom.ru: [AB60F](https://baza.drom.ru/sell_spare_parts/?query=AB60F), [M038S6](https://baza.drom.ru/sell_spare_parts/?query=M038S6), [MYY6](https://baza.drom.ru/sell_spare_parts/?query=MYY6) | |
+
 ## Не проверено
 
 - Цены в РФ на Allison 3000/3500 и 6L90.
