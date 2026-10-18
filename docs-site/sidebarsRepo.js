@@ -13,6 +13,7 @@ export default {
         'research/fuel-system',
         'research/electronic-throttle',
         'research/ignition',
+        'research/cylinder-deactivation',
         'research/intake-manufacturing',
         'research/intake-rfq',
       ]),
